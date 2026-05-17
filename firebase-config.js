@@ -27,10 +27,11 @@
 // ============================================================================
 
 window.FIREBASE_CONFIG = {
-  apiKey:            "REPLACE_ME",
-  authDomain:        "REPLACE_ME.firebaseapp.com",
-  projectId:         "REPLACE_ME",
-  storageBucket:     "REPLACE_ME.appspot.com",
-  messagingSenderId: "REPLACE_ME",
-  appId:             "REPLACE_ME"
+  apiKey:            "AIzaSyA3x1CPOaLTn_8wY5e_5Kvbb0TToeUwces",
+  authDomain:        "meher-vacation-planner.firebaseapp.com",
+  projectId:         "meher-vacation-planner",
+  storageBucket:     "meher-vacation-planner.firebasestorage.app",
+  messagingSenderId: "717656670851",
+  appId:             "1:717656670851:web:f3fd07e47aac757e3851b6",
+  measurementId:     "G-4PZB9E96D8"
 };
