@@ -1,0 +1,1978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Meher's Magical Vacation</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+<style>
+  :root{
+    --parchment:#f6ecd4; --parchment-2:#efe1bb; --ink:#3b2a1d;
+    --gold:#c9a14a; --gold-light:#ffd56b; --magenta:#9b1d2b;
+    --house-primary:#7f0909; --house-secondary:#ffc500; --house-accent:#3b2a1d;
+  }
+  html,body{height:100%}
+  body{
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 10% 0%, rgba(255,213,107,.18), transparent 40%),
+      radial-gradient(circle at 90% 100%, rgba(155,29,43,.10), transparent 45%),
+      linear-gradient(180deg,#f6ecd4 0%,#efe1bb 100%);
+    background-attachment:fixed;
+    min-height:100vh;
+  }
+  body::before{
+    content:""; position:fixed; inset:0;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(59,42,29,.07) 1px, transparent 0);
+    background-size:22px 22px;
+    pointer-events:none; z-index:0;
+  }
+  .font-fantasy{font-family:'Cinzel',serif; letter-spacing:.5px}
+  .ink{color:var(--ink)}
+  .parchment-card{
+    background:linear-gradient(180deg, rgba(255,251,235,.95), rgba(246,236,212,.95));
+    border:1px solid rgba(59,42,29,.18);
+    box-shadow:0 4px 20px rgba(59,42,29,.10), inset 0 0 0 1px rgba(255,255,255,.4);
+    border-radius:18px;
+  }
+  .gold-border{ border:2px solid var(--gold); }
+  .house-gradient{ background:linear-gradient(135deg,var(--house-primary),var(--house-accent)); color:#fff }
+  .btn-primary{
+    background:linear-gradient(135deg, var(--house-primary), #5a0707);
+    color:#fff; padding:.65rem 1.2rem; border-radius:9999px; font-weight:600;
+    box-shadow:0 4px 14px rgba(0,0,0,.18); transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .btn-primary:hover{ transform:translateY(-1px); box-shadow:0 6px 20px rgba(0,0,0,.22)}
+  .btn-secondary{
+    background:linear-gradient(135deg,#fff,#f1e4bd);
+    color:var(--ink); border:1px solid rgba(59,42,29,.25);
+    padding:.55rem 1rem; border-radius:9999px; font-weight:600;
+  }
+  .btn-ghost{
+    background:transparent; color:var(--ink); padding:.45rem .85rem;
+    border-radius:9999px; font-weight:600;
+  }
+  .btn-ghost:hover{ background:rgba(59,42,29,.08) }
+  .pill{ display:inline-flex; align-items:center; gap:.35rem; padding:.18rem .6rem; border-radius:9999px; font-size:.75rem; font-weight:600 }
+  .input{
+    background:#fffdf3; border:1px solid rgba(59,42,29,.25); border-radius:12px;
+    padding:.55rem .8rem; width:100%; color:var(--ink); font-family:inherit;
+  }
+  .input:focus{ outline:2px solid var(--gold); outline-offset:1px }
+  .tab-btn{ padding:.55rem 1rem; border-radius:9999px; font-weight:600; color:#5b4733; }
+  .tab-btn.active{ background:var(--ink); color:#fff8e2 }
+  .sparkle{
+    position:fixed; pointer-events:none; z-index:1;
+    width:8px; height:8px; border-radius:50%;
+    background:radial-gradient(circle, #fff 0%, #ffd56b 50%, transparent 70%);
+    opacity:.7; animation:floatUp 8s linear forwards;
+  }
+  @keyframes floatUp{
+    0%{transform:translateY(100vh) scale(.5); opacity:0}
+    10%{opacity:.8}
+    100%{transform:translateY(-10vh) scale(1.1); opacity:0}
+  }
+  .crest-watermark{
+    position:absolute; inset:0; pointer-events:none; opacity:.05;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><path fill='%233b2a1d' d='M100 10 L180 50 V120 C180 160 140 185 100 195 C60 185 20 160 20 120 V50 Z'/></svg>");
+    background-repeat:no-repeat; background-position:center; background-size:520px;
+  }
+  .priority-H{ background:#e11d48 }
+  .priority-M{ background:#f59e0b }
+  .priority-L{ background:#16a34a }
+  .actor-papa{ background:#3b82f6; color:#fff }
+  .actor-mumma{ background:#ec4899; color:#fff }
+  .actor-dadi{ background:#a855f7; color:#fff }
+  .actor-baba{ background:#14b8a6; color:#fff }
+  .actor-meher{ background:#f59e0b; color:#fff }
+  .badge-card{
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .badge-card:hover{ transform:translateY(-3px) }
+  .badge-locked{ filter:grayscale(1) opacity(.45) }
+  .quest-chapter{
+    background:linear-gradient(180deg,#fffbeb,#f5e6b3);
+    border:2px solid rgba(59,42,29,.25);
+    border-radius:18px; padding:1rem;
+    min-width:200px; position:relative;
+  }
+  .quest-chapter.locked{ filter:grayscale(.7) opacity(.55) }
+  .quest-chapter.current{ box-shadow:0 0 0 3px var(--gold), 0 0 30px rgba(255,213,107,.7) }
+  .quest-chapter.completed::after{
+    content:"✓"; position:absolute; top:-10px; right:-10px;
+    width:36px; height:36px; border-radius:50%;
+    background:var(--house-primary); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-weight:700;
+    box-shadow:0 4px 12px rgba(0,0,0,.18);
+  }
+  .keypad-btn{
+    width:64px; height:64px; border-radius:50%;
+    font-size:1.5rem; font-weight:700; color:var(--ink);
+    background:linear-gradient(180deg,#fffdf3,#efe1bb);
+    border:1px solid rgba(59,42,29,.25);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; user-select:none;
+    transition:transform .08s ease, box-shadow .08s ease;
+  }
+  .keypad-btn:active{ transform:scale(.95) }
+  .pin-dot{ width:14px; height:14px; border-radius:50%; border:2px solid var(--ink); }
+  .pin-dot.filled{ background:var(--ink) }
+  .reminder-banner{
+    position:fixed; left:50%; bottom:24px; transform:translateX(-50%);
+    background:#fffdf3; border:2px solid var(--gold);
+    border-radius:18px; padding:.9rem 1.2rem; min-width:320px;
+    box-shadow:0 10px 30px rgba(0,0,0,.2); z-index:60;
+    display:flex; align-items:center; gap:.8rem;
+  }
+  .toast{
+    position:fixed; left:50%; top:24px; transform:translateX(-50%);
+    background:var(--ink); color:#fffce0;
+    padding:.7rem 1.2rem; border-radius:9999px; font-weight:600;
+    box-shadow:0 8px 24px rgba(0,0,0,.25); z-index:70;
+    animation:toastIn .25s ease both, toastOut .35s ease 2.6s forwards;
+  }
+  @keyframes toastIn{from{opacity:0; transform:translate(-50%,-12px)} to{opacity:1; transform:translate(-50%,0)}}
+  @keyframes toastOut{to{opacity:0; transform:translate(-50%,-12px)}}
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(20,12,4,.55);
+    display:flex; align-items:center; justify-content:center; z-index:50; padding:1rem;
+  }
+  .modal{ max-width:640px; width:100%; max-height:92vh; overflow-y:auto }
+  .schedule-cell{
+    height:42px; border-bottom:1px dashed rgba(59,42,29,.18);
+    border-right:1px dashed rgba(59,42,29,.18); position:relative;
+    cursor:pointer;
+  }
+  .schedule-cell:hover{ background:rgba(255,213,107,.18) }
+  .schedule-task{
+    position:absolute; left:2px; right:2px; border-radius:8px;
+    padding:2px 6px; font-size:.7rem; font-weight:600; color:#fff;
+    overflow:hidden; cursor:pointer;
+  }
+  .heatmap-cell{ width:24px; height:24px; border-radius:5px; background:rgba(59,42,29,.12) }
+  .quadrant-zone{
+    border:2px dashed rgba(59,42,29,.3); border-radius:14px;
+    padding:.6rem; min-height:120px; background:rgba(255,253,243,.5);
+  }
+  .quadrant-zone.dragover{ background:rgba(255,213,107,.35); border-color:var(--gold)}
+  .pop{ animation:pop .35s cubic-bezier(.34,1.56,.64,1) }
+  @keyframes pop{0%{transform:scale(.7); opacity:0}100%{transform:scale(1); opacity:1}}
+  .points-fly{
+    position:fixed; font-family:'Cinzel',serif; font-weight:900; color:var(--gold);
+    font-size:2rem; pointer-events:none; z-index:80;
+    text-shadow:0 2px 6px rgba(0,0,0,.4);
+    animation:flyUp 1.3s ease-out forwards;
+  }
+  @keyframes flyUp{
+    0%{opacity:0; transform:translateY(0) scale(.6)}
+    20%{opacity:1; transform:translateY(-12px) scale(1.2)}
+    100%{opacity:0; transform:translateY(-120px) scale(.8)}
+  }
+  details summary{ list-style:none; cursor:pointer }
+  details summary::-webkit-details-marker{display:none}
+  .scrollx{ overflow-x:auto; scrollbar-width:thin }
+</style>
+</head>
+<body class="antialiased">
+
+<!-- Sparkle layer -->
+<div id="sparkleLayer" aria-hidden="true"></div>
+
+<!-- Firebase setup banner (shown if config is placeholder) -->
+<div id="firebaseSetupBanner" class="hidden fixed top-0 left-0 right-0 z-50 bg-rose-900 text-white px-4 py-3 text-sm shadow-lg">
+  <div class="max-w-5xl mx-auto flex items-start gap-3">
+    <i class="fas fa-triangle-exclamation text-xl mt-0.5"></i>
+    <div>
+      <p class="font-semibold">One-time setup needed: Firebase isn't configured yet.</p>
+      <p class="opacity-90">Open <code class="bg-black/30 px-1 rounded">firebase-config.js</code> and follow the steps at the top of that file (~5 minutes). Then reload this page.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== SETUP WIZARD ============================== -->
+<section id="setupWizard" class="hidden relative z-10 min-h-screen flex items-center justify-center p-4">
+  <div class="parchment-card gold-border p-6 md:p-10 max-w-2xl w-full relative overflow-hidden">
+    <div class="crest-watermark"></div>
+    <div class="relative">
+      <h1 class="font-fantasy text-3xl md:text-4xl font-bold text-center">Welcome to Meher's Magical Vacation</h1>
+      <p class="text-center mt-2 opacity-80">A one-time setup — about two minutes.</p>
+
+      <div id="wizStep1" class="mt-8">
+        <h2 class="font-fantasy text-xl font-bold mb-3">Step 1 of 3 · The Quest Begins</h2>
+        <label class="block mb-2 text-sm font-semibold">When does Meher's vacation start?</label>
+        <input id="wizStartDate" type="date" class="input" value="2026-05-17">
+        <p class="text-xs opacity-70 mt-1">The app will auto-build the 8-week quest map from this date.</p>
+
+        <label class="block mt-5 mb-2 text-sm font-semibold">Pick Meher's Hogwarts House</label>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="wizHouseGrid"></div>
+
+        <div class="mt-8 flex justify-end">
+          <button class="btn-primary" onclick="App.setup.toStep2()">Continue <i class="fas fa-arrow-right ml-1"></i></button>
+        </div>
+      </div>
+
+      <div id="wizStep2" class="hidden mt-8">
+        <h2 class="font-fantasy text-xl font-bold mb-3">Step 2 of 3 · Set Secret PINs</h2>
+        <p class="text-sm opacity-80 mb-4">Each person gets a 4–6 digit PIN. Don't share them with each other!</p>
+        <div class="grid md:grid-cols-2 gap-4" id="wizPinInputs"></div>
+        <div class="mt-8 flex justify-between">
+          <button class="btn-ghost" onclick="App.setup.toStep1()"><i class="fas fa-arrow-left mr-1"></i> Back</button>
+          <button class="btn-primary" onclick="App.setup.toStep3()">Continue <i class="fas fa-arrow-right ml-1"></i></button>
+        </div>
+      </div>
+
+      <div id="wizStep3" class="hidden mt-8">
+        <h2 class="font-fantasy text-xl font-bold mb-3">Step 3 of 3 · Almost ready</h2>
+        <p class="text-sm opacity-80 mb-3">We'll pre-load 20 useful categories, 10 starter badges, and a small rewards catalog — all editable later in the Caregiver panel.</p>
+        <div id="wizSeedPreview" class="mt-3 bg-amber-50/60 border border-amber-200 rounded-xl p-3 text-sm max-h-56 overflow-y-auto"></div>
+        <div class="mt-8 flex justify-between">
+          <button class="btn-ghost" onclick="App.setup.toStep2()"><i class="fas fa-arrow-left mr-1"></i> Back</button>
+          <button class="btn-primary" id="wizFinishBtn" onclick="App.setup.finish()"><i class="fas fa-wand-sparkles mr-1"></i> Cast the Spell</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== LOGIN ============================== -->
+<section id="loginScreen" class="hidden relative z-10 min-h-screen flex flex-col items-center justify-center p-4">
+  <div class="text-center mb-6">
+    <h1 class="font-fantasy text-4xl md:text-5xl font-bold">Meher's Magical Vacation</h1>
+    <p class="mt-1 opacity-80 italic">Who's logging in today?</p>
+  </div>
+  <div class="grid grid-cols-2 md:grid-cols-5 gap-4 max-w-4xl w-full" id="loginTiles"></div>
+  <div class="mt-8 text-xs opacity-60">v1.0 · made with <i class="fas fa-heart text-rose-700"></i> for Meher</div>
+</section>
+
+<!-- PIN keypad modal -->
+<div id="pinModal" class="hidden modal-backdrop">
+  <div class="parchment-card p-6 max-w-sm w-full text-center relative">
+    <button class="absolute top-3 right-3 btn-ghost" onclick="App.auth.closePin()"><i class="fas fa-xmark"></i></button>
+    <h3 class="font-fantasy text-2xl font-bold" id="pinTitle">Enter PIN</h3>
+    <p class="text-sm opacity-70 mt-1" id="pinSubtitle"></p>
+    <div class="flex justify-center gap-2 my-5" id="pinDots"></div>
+    <div class="grid grid-cols-3 gap-3 max-w-[260px] mx-auto" id="pinKeypad"></div>
+    <p id="pinError" class="mt-3 text-sm text-rose-700 font-semibold hidden"></p>
+  </div>
+</div>
+
+<!-- ============================== CAREGIVER PANEL ============================== -->
+<section id="caregiverPanel" class="hidden relative z-10 min-h-screen">
+  <header class="house-gradient sticky top-0 z-30 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3 flex-wrap">
+      <i class="fas fa-hat-wizard text-2xl"></i>
+      <h1 class="font-fantasy text-xl md:text-2xl font-bold">Caregiver Council</h1>
+      <span id="cgActorChip" class="pill ml-2"></span>
+      <div class="ml-auto flex items-center gap-2 flex-wrap">
+        <button class="btn-secondary" onclick="App.ui.openSettings()"><i class="fas fa-gear mr-1"></i> Settings</button>
+        <button class="btn-secondary" onclick="App.auth.logout()"><i class="fas fa-right-from-bracket mr-1"></i> Logout</button>
+      </div>
+    </div>
+    <nav class="max-w-7xl mx-auto px-4 pb-3 flex gap-2 overflow-x-auto" id="cgTabs"></nav>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-6">
+    <div id="cgView" class="space-y-6"></div>
+  </main>
+</section>
+
+<!-- ============================== MEHER PANEL ============================== -->
+<section id="meherPanel" class="hidden relative z-10 min-h-screen">
+  <header class="house-gradient sticky top-0 z-30 shadow-md relative overflow-hidden">
+    <div class="absolute inset-0 opacity-20" style="background:radial-gradient(circle at 20% 20%, #fff 0%, transparent 50%), radial-gradient(circle at 80% 80%, #ffd56b 0%, transparent 50%)"></div>
+    <div class="max-w-7xl mx-auto px-4 py-4 relative">
+      <div class="flex items-center gap-3 flex-wrap">
+        <span class="text-3xl">🦉</span>
+        <div>
+          <h1 class="font-fantasy text-2xl md:text-3xl font-bold">Meher's Magical Vacation</h1>
+          <p class="text-sm opacity-90" id="meherSubheader"></p>
+        </div>
+        <div class="ml-auto flex items-center gap-3 flex-wrap">
+          <div class="flex items-center gap-2 bg-black/20 px-3 py-1.5 rounded-full">
+            <span class="text-xl">✨</span>
+            <span class="font-fantasy text-xl font-bold" id="meherTotalPoints">0</span>
+            <span class="text-xs opacity-80">House Points</span>
+          </div>
+          <div class="flex items-center gap-2 bg-black/20 px-3 py-1.5 rounded-full">
+            <span class="text-xl">🔔</span>
+            <span class="font-fantasy text-xl font-bold" id="meherStreak">0</span>
+            <span class="text-xs opacity-80">day streak</span>
+          </div>
+          <button class="btn-secondary" onclick="App.theme.toggleSound()" title="Mute/unmute" id="muteBtn"><i class="fas fa-volume-high"></i></button>
+          <button class="btn-secondary" onclick="App.auth.logout()"><i class="fas fa-right-from-bracket"></i></button>
+        </div>
+      </div>
+      <nav class="mt-4 flex gap-2 overflow-x-auto" id="meherTabs"></nav>
+    </div>
+  </header>
+  <main class="max-w-7xl mx-auto px-4 py-6">
+    <div id="meherView"></div>
+  </main>
+</section>
+
+<!-- Modals + toasts -->
+<div id="modalHost"></div>
+<div id="toastHost"></div>
+<div id="reminderHost"></div>
+
+<!-- Firebase config (must come BEFORE the module script) -->
+<script src="./firebase-config.js"></script>
+
+<!-- ============================== APP LOGIC ============================== -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, addDoc,
+  collection, onSnapshot, query, orderBy, limit, serverTimestamp, writeBatch
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+// ---------------------------------------------------------------------------
+//  Constants & seeds
+// ---------------------------------------------------------------------------
+const HOUSES = {
+  gryffindor:{ name:"Gryffindor", primary:"#7f0909", secondary:"#ffc500", accent:"#3b2a1d", emoji:"🦁" },
+  slytherin: { name:"Slytherin",  primary:"#1a472a", secondary:"#aaaaaa", accent:"#0a1c12", emoji:"🐍" },
+  ravenclaw: { name:"Ravenclaw",  primary:"#0e1a40", secondary:"#946b2d", accent:"#1a2a5a", emoji:"🦅" },
+  hufflepuff:{ name:"Hufflepuff", primary:"#ecb939", secondary:"#372e29", accent:"#5d4a1f", emoji:"🦡" },
+};
+const ACTOR_INFO = {
+  papa:  { label:"Papa",  emoji:"👨", chip:"actor-papa"  },
+  mumma: { label:"Mumma", emoji:"👩", chip:"actor-mumma" },
+  dadi:  { label:"Dadi",  emoji:"👵", chip:"actor-dadi"  },
+  baba:  { label:"Baba",  emoji:"👴", chip:"actor-baba"  },
+  meher: { label:"Meher", emoji:"🧒", chip:"actor-meher" },
+};
+const CAREGIVERS = ["papa","mumma","dadi","baba"];
+
+const SEED_CATEGORIES = [
+  { id:"self-study",     name:"Self Study",        icon:"fa-book",            color:"#2563eb" },
+  { id:"classes",        name:"Classes",           icon:"fa-chalkboard-user", color:"#7c3aed" },
+  { id:"play-time",      name:"Play Time",         icon:"fa-futbol",          color:"#16a34a" },
+  { id:"movie-time",     name:"Movie Time",        icon:"fa-clapperboard",    color:"#db2777" },
+  { id:"cleaning",       name:"Cleaning",          icon:"fa-broom",           color:"#0d9488" },
+  { id:"habits",         name:"Habits",            icon:"fa-clipboard-check", color:"#ea580c" },
+  { id:"nlf",            name:"NLF Preparation",   icon:"fa-graduation-cap",  color:"#4f46e5" },
+  { id:"travel",         name:"Travel",            icon:"fa-plane",           color:"#0284c7" },
+  { id:"sleeping",       name:"Sleeping",          icon:"fa-moon",            color:"#475569" },
+  { id:"lego",           name:"LEGO",              icon:"fa-cubes",           color:"#eab308" },
+  { id:"reading",        name:"Reading",           icon:"fa-book-open",       color:"#92400e" },
+  { id:"kathak",         name:"Kathak / Riyaaz",   icon:"fa-music",           color:"#db2777" },
+  { id:"art",            name:"Art & Craft",       icon:"fa-palette",         color:"#f43f5e" },
+  { id:"journaling",     name:"Journaling",        icon:"fa-pen-fancy",       color:"#64748b" },
+  { id:"family",         name:"Family Time",       icon:"fa-people-roof",     color:"#f59e0b" },
+  { id:"cooking",        name:"Cooking Helper",    icon:"fa-utensils",        color:"#84cc16" },
+  { id:"mindfulness",    name:"Mindfulness",       icon:"fa-spa",             color:"#06b6d4" },
+  { id:"science",        name:"Science Time",      icon:"fa-flask",           color:"#8b5cf6" },
+  { id:"nature",         name:"Nature Walk",       icon:"fa-tree",            color:"#10b981" },
+  { id:"free-play",      name:"Free Play",         icon:"fa-sun",             color:"#d946ef" },
+];
+
+const SEED_BADGES = [
+  { id:"bookworm",       name:"Bookworm",        icon:"📚", rule:{type:"weekly-category-count", categoryId:"reading", count:3} },
+  { id:"lego-master",    name:"LEGO Master",     icon:"🧱", rule:{type:"total-category-count", categoryId:"lego", count:5} },
+  { id:"riyaaz-streak",  name:"Riyaaz Streak",   icon:"🔔", rule:{type:"category-streak", categoryId:"kathak", days:7} },
+  { id:"tidy-witch",     name:"Tidy Witch",      icon:"🧹", rule:{type:"weekly-category-count", categoryId:"cleaning", count:4} },
+  { id:"early-bird",     name:"Early Bird",      icon:"🌅", rule:{type:"category-streak", categoryId:"sleeping", days:7} },
+  { id:"nlf-champion",   name:"NLF Champion",    icon:"🏆", rule:{type:"total-category-count", categoryId:"nlf", count:10} },
+  { id:"star-student",   name:"Star Student",    icon:"⭐", rule:{type:"weekly-category-count", categoryId:"self-study", count:5} },
+  { id:"family-heart",   name:"Family Heart",    icon:"💗", rule:{type:"total-category-count", categoryId:"family", count:5} },
+  { id:"sparkle-streak", name:"Sparkle Streak",  icon:"✨", rule:{type:"any-streak", days:5} },
+  { id:"hundred-club",   name:"Hundred Club",    icon:"💯", rule:{type:"total-points", points:100} },
+];
+
+const SEED_REWARDS_CATALOG = [
+  { id:"r-icecream",  name:"Ice Cream Outing",            icon:"🍦", pointsCost:50 },
+  { id:"r-lego",      name:"New LEGO mini-set",           icon:"🧱", pointsCost:200 },
+  { id:"r-movie",     name:"Pick the Disney movie night", icon:"🎬", pointsCost:30 },
+  { id:"r-sleepover", name:"Sleepover with a friend",     icon:"🛌", pointsCost:150 },
+  { id:"r-skip-clean",name:"Skip cleaning day pass",      icon:"🧹", pointsCost:40 },
+  { id:"r-library",   name:"Hogwarts library trip",       icon:"📚", pointsCost:60 },
+  { id:"r-late",      name:"Late bedtime (+30 min)",      icon:"🌙", pointsCost:25 },
+  { id:"r-book",      name:"A new book of her choice",    icon:"📖", pointsCost:80 },
+  { id:"r-outing",    name:"Special outing with Dadi/Baba",icon:"🎡", pointsCost:100 },
+];
+
+const SEED_THRESHOLDS = [
+  { id:"t-80weekly",   name:"80% Weekly Quest",   icon:"🌟", rule:{type:"weekly-completion-pct", pct:80}, reward:"Surprise treat from the caregivers!" },
+  { id:"t-q1-all",     name:"All Q1 Tasks Done",  icon:"⚡", rule:{type:"weekly-priority-all", priority:"H"}, reward:"+20 bonus points" },
+];
+
+// ---------------------------------------------------------------------------
+//  Firebase init
+// ---------------------------------------------------------------------------
+const cfg = window.FIREBASE_CONFIG || {};
+const configValid = cfg.apiKey && !String(cfg.apiKey).includes("REPLACE_ME");
+let app, db, auth;
+if(configValid){
+  app = initializeApp(cfg);
+  auth = getAuth(app);
+  db = getFirestore(app);
+} else {
+  document.getElementById("firebaseSetupBanner").classList.remove("hidden");
+}
+
+// ---------------------------------------------------------------------------
+//  In-memory state + Firestore listeners
+// ---------------------------------------------------------------------------
+const State = {
+  settings:null, pins:null, categories:[], tasks:[], rewards:[],
+  redemptions:[], meher:{ totalPoints:0, weekPoints:0, streakDays:0, earnedBadges:[], lastCompletedAt:null, house:"gryffindor" },
+  audit:[], me:null, // me = 'papa' | 'mumma' | 'dadi' | 'baba' | 'meher'
+};
+const Listeners = {};
+
+function subscribeAll(){
+  if(!db) return;
+  Listeners.settings = onSnapshot(doc(db,"settings","app"), s=>{ State.settings = s.exists()?s.data():null; routeBoot(); render(); });
+  Listeners.pins     = onSnapshot(doc(db,"settings","pins"), s=>{ State.pins = s.exists()?s.data():null; });
+  Listeners.categories = onSnapshot(collection(db,"categories"), snap=>{
+    State.categories = snap.docs.map(d=>({id:d.id,...d.data()})); render();
+  });
+  Listeners.tasks = onSnapshot(collection(db,"tasks"), snap=>{
+    State.tasks = snap.docs.map(d=>({id:d.id,...d.data()})); render();
+  });
+  Listeners.rewards = onSnapshot(collection(db,"rewards"), snap=>{
+    State.rewards = snap.docs.map(d=>({id:d.id,...d.data()})); render();
+  });
+  Listeners.redemptions = onSnapshot(collection(db,"redemptions"), snap=>{
+    State.redemptions = snap.docs.map(d=>({id:d.id,...d.data()})); render();
+  });
+  Listeners.meher = onSnapshot(doc(db,"meher_state","main"), s=>{
+    if(s.exists()){ State.meher = { ...State.meher, ...s.data() }; }
+    render();
+  });
+  Listeners.audit = onSnapshot(query(collection(db,"audit_log"), orderBy("at","desc"), limit(200)), snap=>{
+    State.audit = snap.docs.map(d=>({id:d.id,...d.data()})); render();
+  });
+}
+
+// ---------------------------------------------------------------------------
+//  PIN hashing (PBKDF2 via Web Crypto)
+// ---------------------------------------------------------------------------
+async function pbkdf2(pin, saltHex){
+  const enc = new TextEncoder();
+  const salt = Uint8Array.from(saltHex.match(/.{1,2}/g).map(b=>parseInt(b,16)));
+  const key = await crypto.subtle.importKey("raw", enc.encode(pin), {name:"PBKDF2"}, false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits({name:"PBKDF2", salt, iterations:100000, hash:"SHA-256"}, key, 256);
+  return [...new Uint8Array(bits)].map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+function randSalt(){ const a=new Uint8Array(16); crypto.getRandomValues(a); return [...a].map(b=>b.toString(16).padStart(2,"0")).join(""); }
+async function hashPin(pin){ const salt = randSalt(); const hash = await pbkdf2(pin, salt); return {salt, hash}; }
+async function verifyPin(pin, stored){ if(!stored) return false; const h = await pbkdf2(pin, stored.salt); return h === stored.hash; }
+
+// ---------------------------------------------------------------------------
+//  Date helpers
+// ---------------------------------------------------------------------------
+function ymd(d){ const x = d instanceof Date ? d : new Date(d); return x.toISOString().slice(0,10); }
+function today(){ return ymd(new Date()); }
+function addDays(base, n){ const d = new Date(base); d.setDate(d.getDate()+n); return d; }
+function weekIndex(dateStr){
+  if(!State.settings?.startDate) return 0;
+  const start = new Date(State.settings.startDate);
+  const d = new Date(dateStr);
+  return Math.floor((d - start) / (7*24*3600*1000));
+}
+function weekRange(idx){
+  const start = new Date(State.settings.startDate);
+  const s = addDays(start, idx*7);
+  const e = addDays(s, 6);
+  return { start: ymd(s), end: ymd(e) };
+}
+function fmtDate(dateStr){
+  const d = new Date(dateStr);
+  return d.toLocaleDateString("en-IN",{weekday:"short", day:"numeric", month:"short"});
+}
+function fmtTime(t){ if(!t) return ""; return t; }
+
+// ---------------------------------------------------------------------------
+//  Theme
+// ---------------------------------------------------------------------------
+const Theme = {
+  apply(house){
+    const h = HOUSES[house] || HOUSES.gryffindor;
+    document.documentElement.style.setProperty("--house-primary", h.primary);
+    document.documentElement.style.setProperty("--house-secondary", h.secondary);
+    document.documentElement.style.setProperty("--house-accent", h.accent);
+  },
+  sound:true,
+  toggleSound(){
+    this.sound = !this.sound;
+    document.getElementById("muteBtn").innerHTML = this.sound? '<i class="fas fa-volume-high"></i>':'<i class="fas fa-volume-xmark"></i>';
+    if(this.sound) this.chime(880,.12);
+  },
+  chime(freq=880, dur=.18){
+    if(!this.sound) return;
+    try{
+      const ctx = (Theme._ac = Theme._ac || new (window.AudioContext||window.webkitAudioContext)());
+      const o = ctx.createOscillator(); const g = ctx.createGain();
+      o.frequency.value = freq; o.type="triangle";
+      g.gain.setValueAtTime(.0001, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(.18, ctx.currentTime+.01);
+      g.gain.exponentialRampToValueAtTime(.0001, ctx.currentTime+dur);
+      o.connect(g).connect(ctx.destination);
+      o.start(); o.stop(ctx.currentTime+dur+.02);
+    }catch(e){}
+  },
+  ghungroo(){
+    if(!this.sound) return;
+    [988,1318,1568,1865].forEach((f,i)=> setTimeout(()=>this.chime(f,.12), i*70));
+  },
+  celebrate(el){
+    confetti({ particleCount:120, spread:80, origin:{y:.65}, colors:["#ffd56b","#7f0909","#fff","#c9a14a"] });
+    this.ghungroo();
+    if(el){
+      const r = el.getBoundingClientRect();
+      const f = document.createElement("div"); f.className="points-fly";
+      f.textContent="+ points!"; f.style.left = (r.left+r.width/2-30)+"px"; f.style.top = (r.top)+"px";
+      document.body.appendChild(f); setTimeout(()=>f.remove(),1400);
+    }
+  },
+  spawnSparkles(){
+    const layer = document.getElementById("sparkleLayer");
+    setInterval(()=>{
+      if(document.hidden) return;
+      const s = document.createElement("div");
+      s.className="sparkle"; s.style.left = Math.random()*100+"vw";
+      s.style.animationDuration = (6+Math.random()*6)+"s";
+      s.style.opacity = (.4+Math.random()*.4);
+      layer.appendChild(s); setTimeout(()=>s.remove(), 13000);
+    }, 600);
+  },
+};
+
+// ---------------------------------------------------------------------------
+//  Toast / modal helpers
+// ---------------------------------------------------------------------------
+function toast(msg){
+  const t = document.createElement("div");
+  t.className="toast"; t.innerHTML = msg; document.getElementById("toastHost").appendChild(t);
+  setTimeout(()=>t.remove(),3200);
+}
+function modal(html, opts={}){
+  const host = document.getElementById("modalHost");
+  const w = document.createElement("div"); w.className="modal-backdrop"; w.tabIndex=-1;
+  w.innerHTML = `<div class="parchment-card modal p-6 relative">
+    <button class="absolute top-3 right-3 btn-ghost" data-close><i class="fas fa-xmark"></i></button>
+    ${html}
+  </div>`;
+  w.addEventListener("click",e=>{
+    if(e.target===w || e.target.closest("[data-close]")) close();
+  });
+  function close(){ w.remove(); opts.onClose&&opts.onClose(); }
+  host.appendChild(w);
+  return { el:w, close };
+}
+
+// ---------------------------------------------------------------------------
+//  Audit
+// ---------------------------------------------------------------------------
+async function writeAudit(action, entityType, entityId, before, after){
+  if(!db || !State.me) return;
+  await addDoc(collection(db,"audit_log"), {
+    actor: State.me, action, entityType, entityId,
+    before: before||null, after: after||null,
+    at: serverTimestamp(), atMs: Date.now()
+  });
+}
+
+// ---------------------------------------------------------------------------
+//  Setup wizard
+// ---------------------------------------------------------------------------
+const Setup = {
+  data:{ startDate:"2026-05-17", house:"gryffindor", pins:{ papa:"", mumma:"", dadi:"", baba:"", meher:"" } },
+
+  show(){
+    document.getElementById("setupWizard").classList.remove("hidden");
+    document.getElementById("loginScreen").classList.add("hidden");
+    document.getElementById("caregiverPanel").classList.add("hidden");
+    document.getElementById("meherPanel").classList.add("hidden");
+    this.renderStep1();
+  },
+  renderStep1(){
+    const grid = document.getElementById("wizHouseGrid"); grid.innerHTML="";
+    Object.entries(HOUSES).forEach(([k,h])=>{
+      const sel = this.data.house===k;
+      const b = document.createElement("button");
+      b.className = `p-3 rounded-2xl border-2 text-center transition ${sel? "bg-amber-50 border-amber-500 shadow-lg":"bg-white/60 border-amber-200"}`;
+      b.innerHTML = `<div class="text-3xl">${h.emoji}</div><div class="font-fantasy font-bold mt-1">${h.name}</div>`;
+      b.onclick = ()=>{ this.data.house=k; Theme.apply(k); this.renderStep1(); };
+      grid.appendChild(b);
+    });
+  },
+  toStep1(){
+    ["wizStep1","wizStep2","wizStep3"].forEach(id=>document.getElementById(id).classList.add("hidden"));
+    document.getElementById("wizStep1").classList.remove("hidden");
+    this.renderStep1();
+  },
+  toStep2(){
+    this.data.startDate = document.getElementById("wizStartDate").value || "2026-05-17";
+    ["wizStep1","wizStep3"].forEach(id=>document.getElementById(id).classList.add("hidden"));
+    document.getElementById("wizStep2").classList.remove("hidden");
+    const host = document.getElementById("wizPinInputs"); host.innerHTML="";
+    ["papa","mumma","dadi","baba","meher"].forEach(k=>{
+      const a = ACTOR_INFO[k];
+      const row = document.createElement("div");
+      row.innerHTML = `
+        <label class="text-sm font-semibold flex items-center gap-1">${a.emoji} ${a.label}'s PIN</label>
+        <input data-pin="${k}" class="input mt-1" type="password" inputmode="numeric" pattern="\\d{4,6}" minlength="4" maxlength="6" placeholder="4 to 6 digits" value="${this.data.pins[k]||""}">`;
+      host.appendChild(row);
+    });
+    host.querySelectorAll("[data-pin]").forEach(inp=>{
+      inp.addEventListener("input",e=>{ this.data.pins[e.target.dataset.pin] = e.target.value.replace(/\D/g,""); });
+    });
+  },
+  toStep3(){
+    const ok = Object.values(this.data.pins).every(p=>/^\d{4,6}$/.test(p));
+    const uniq = new Set(Object.values(this.data.pins));
+    if(!ok) return toast("Every PIN must be 4–6 digits");
+    if(uniq.size!==5) return toast("Each person needs a different PIN");
+    ["wizStep1","wizStep2"].forEach(id=>document.getElementById(id).classList.add("hidden"));
+    document.getElementById("wizStep3").classList.remove("hidden");
+    const prev = document.getElementById("wizSeedPreview");
+    prev.innerHTML = `
+      <div><b>Start:</b> ${this.data.startDate} · <b>House:</b> ${HOUSES[this.data.house].name}</div>
+      <div class="mt-2"><b>Categories</b> (${SEED_CATEGORIES.length}): ${SEED_CATEGORIES.map(c=>c.name).join(" · ")}</div>
+      <div class="mt-2"><b>Badges</b> (${SEED_BADGES.length}): ${SEED_BADGES.map(b=>b.icon+" "+b.name).join(" · ")}</div>
+      <div class="mt-2"><b>Rewards Catalog</b> (${SEED_REWARDS_CATALOG.length}): ${SEED_REWARDS_CATALOG.map(r=>r.icon+" "+r.name+" ("+r.pointsCost+"p)").join(" · ")}</div>
+      <div class="mt-2"><b>Threshold quests:</b> ${SEED_THRESHOLDS.map(t=>t.icon+" "+t.name).join(" · ")}</div>`;
+  },
+  async finish(){
+    const btn = document.getElementById("wizFinishBtn");
+    btn.disabled = true; btn.innerHTML='<i class="fas fa-spinner fa-spin mr-1"></i> Casting...';
+    try{
+      const pinDocs = {};
+      for(const k of Object.keys(this.data.pins)){
+        pinDocs[k] = await hashPin(this.data.pins[k]);
+      }
+      const batch = writeBatch(db);
+      batch.set(doc(db,"settings","app"), {
+        startDate: this.data.startDate, weeks:8, house: this.data.house,
+        createdAt: serverTimestamp(),
+      });
+      batch.set(doc(db,"settings","pins"), pinDocs);
+      batch.set(doc(db,"meher_state","main"), {
+        totalPoints:0, weekPoints:0, streakDays:0,
+        earnedBadges:[], lastCompletedAt:null, house: this.data.house
+      });
+      SEED_CATEGORIES.forEach(c=> batch.set(doc(db,"categories",c.id), {
+        name:c.name, icon:c.icon, color:c.color, default:true, active:true,
+        createdBy:"system", createdAt: serverTimestamp(),
+      }));
+      SEED_BADGES.forEach(b=> batch.set(doc(db,"rewards", b.id), {
+        type:"badge", name:b.name, icon:b.icon, rule:b.rule, createdBy:"system"
+      }));
+      SEED_REWARDS_CATALOG.forEach(r=> batch.set(doc(db,"rewards", r.id), {
+        type:"catalog", name:r.name, icon:r.icon, pointsCost:r.pointsCost, createdBy:"system"
+      }));
+      SEED_THRESHOLDS.forEach(t=> batch.set(doc(db,"rewards", t.id), {
+        type:"threshold", name:t.name, icon:t.icon, rule:t.rule, reward:t.reward, createdBy:"system"
+      }));
+      await batch.commit();
+      Theme.apply(this.data.house);
+      toast("✨ All set! Pick who's logging in.");
+      // routeBoot will trigger via onSnapshot
+    }catch(e){
+      console.error(e); toast("Setup failed: "+(e.message||e));
+      btn.disabled=false; btn.innerHTML='<i class="fas fa-wand-sparkles mr-1"></i> Cast the Spell';
+    }
+  }
+};
+
+// ---------------------------------------------------------------------------
+//  Auth (PIN-based on top of anonymous Firebase auth)
+// ---------------------------------------------------------------------------
+const Auth = {
+  pending:null,
+  showLogin(){
+    document.getElementById("setupWizard").classList.add("hidden");
+    document.getElementById("caregiverPanel").classList.add("hidden");
+    document.getElementById("meherPanel").classList.add("hidden");
+    document.getElementById("loginScreen").classList.remove("hidden");
+    const tiles = document.getElementById("loginTiles"); tiles.innerHTML="";
+    ["papa","mumma","dadi","baba","meher"].forEach(k=>{
+      const a = ACTOR_INFO[k];
+      const t = document.createElement("button");
+      t.className = "parchment-card p-5 text-center hover:shadow-xl transition";
+      t.innerHTML = `<div class="text-5xl mb-2">${a.emoji}</div><div class="font-fantasy font-bold text-lg">${a.label}</div>`;
+      t.onclick = ()=> this.openPin(k);
+      tiles.appendChild(t);
+    });
+  },
+  openPin(who){
+    this.pending = { who, pin:"" };
+    const m = document.getElementById("pinModal");
+    document.getElementById("pinTitle").textContent = `Welcome, ${ACTOR_INFO[who].label}`;
+    document.getElementById("pinSubtitle").textContent = "Enter your secret PIN";
+    document.getElementById("pinError").classList.add("hidden");
+    this.renderKeypad();
+    m.classList.remove("hidden");
+  },
+  closePin(){ this.pending=null; document.getElementById("pinModal").classList.add("hidden"); },
+  renderKeypad(){
+    const dots = document.getElementById("pinDots"); dots.innerHTML="";
+    const pad = document.getElementById("pinKeypad"); pad.innerHTML="";
+    for(let i=0;i<6;i++){
+      const d = document.createElement("div");
+      d.className = "pin-dot"+ (i<this.pending.pin.length?" filled":"");
+      dots.appendChild(d);
+    }
+    const keys = ["1","2","3","4","5","6","7","8","9","",0,"⌫"];
+    keys.forEach(k=>{
+      if(k==="") return pad.appendChild(document.createElement("div"));
+      const b = document.createElement("button");
+      b.className = "keypad-btn"; b.textContent = k;
+      b.onclick = ()=>this.pressKey(k);
+      pad.appendChild(b);
+    });
+  },
+  async pressKey(k){
+    if(!this.pending) return;
+    if(k==="⌫"){ this.pending.pin = this.pending.pin.slice(0,-1); }
+    else if(this.pending.pin.length<6){ this.pending.pin += String(k); }
+    this.renderKeypad();
+    if(this.pending.pin.length>=4){
+      const stored = State.pins?.[this.pending.who];
+      const ok = await verifyPin(this.pending.pin, stored);
+      if(ok){
+        Theme.chime(660,.08);
+        State.me = this.pending.who;
+        sessionStorage.setItem("meher_user", State.me);
+        this.closePin();
+        Router.go( State.me==="meher" ? "#/meher" : `#/${State.me}` );
+      } else if(this.pending.pin.length===6){
+        document.getElementById("pinError").textContent = "Wrong PIN — try again";
+        document.getElementById("pinError").classList.remove("hidden");
+        this.pending.pin = ""; this.renderKeypad();
+      }
+    }
+  },
+  logout(){
+    State.me = null;
+    sessionStorage.removeItem("meher_user");
+    Router.go("#/login");
+  },
+};
+
+// ---------------------------------------------------------------------------
+//  Router
+// ---------------------------------------------------------------------------
+const Router = {
+  current:"#/login",
+  go(hash){ if(location.hash!==hash){ location.hash = hash; } else { this.handle(); } },
+  handle(){
+    this.current = location.hash || "#/login";
+    if(!configValid){ return; }
+    if(!State.settings){ Setup.show(); return; }
+    if(!State.me){ Auth.showLogin(); return; }
+    if(State.me==="meher"){ MeherUI.show(); }
+    else { CaregiverUI.show(); }
+  }
+};
+window.addEventListener("hashchange",()=>Router.handle());
+
+function routeBoot(){
+  if(!configValid) return;
+  if(!State.settings){ Setup.show(); return; }
+  Theme.apply(State.settings.house || "gryffindor");
+  const saved = sessionStorage.getItem("meher_user");
+  if(saved){ State.me = saved; }
+  if(!State.me){ Auth.showLogin(); return; }
+  if(State.me==="meher"){ MeherUI.show(); }
+  else { CaregiverUI.show(); }
+}
+
+// ---------------------------------------------------------------------------
+//  CAREGIVER UI
+// ---------------------------------------------------------------------------
+const CG_TABS = [
+  { id:"schedule", icon:"fa-calendar-week",       label:"Schedule" },
+  { id:"tasks",    icon:"fa-list-check",          label:"Tasks" },
+  { id:"cats",     icon:"fa-tags",                label:"Categories" },
+  { id:"rewards",  icon:"fa-trophy",              label:"Rewards" },
+  { id:"reports",  icon:"fa-chart-line",          label:"Reports" },
+  { id:"audit",    icon:"fa-clock-rotate-left",   label:"Activity Log" },
+];
+const CaregiverUI = {
+  tab:"schedule",
+  show(){
+    document.getElementById("setupWizard").classList.add("hidden");
+    document.getElementById("loginScreen").classList.add("hidden");
+    document.getElementById("meherPanel").classList.add("hidden");
+    document.getElementById("caregiverPanel").classList.remove("hidden");
+    const a = ACTOR_INFO[State.me];
+    const chip = document.getElementById("cgActorChip");
+    chip.className = `pill ${a.chip}`;
+    chip.innerHTML = `${a.emoji} ${a.label}`;
+    const tabs = document.getElementById("cgTabs"); tabs.innerHTML="";
+    CG_TABS.forEach(t=>{
+      const b = document.createElement("button");
+      b.className = "tab-btn"+(this.tab===t.id?" active":"");
+      b.innerHTML = `<i class="fas ${t.icon} mr-1"></i> ${t.label}`;
+      b.onclick = ()=>{ this.tab = t.id; this.show(); };
+      tabs.appendChild(b);
+    });
+    this.renderView();
+  },
+  renderView(){
+    const v = document.getElementById("cgView");
+    if(this.tab==="schedule") v.innerHTML = this.viewSchedule();
+    if(this.tab==="tasks")    v.innerHTML = this.viewTasks();
+    if(this.tab==="cats")     v.innerHTML = this.viewCategories();
+    if(this.tab==="rewards")  v.innerHTML = this.viewRewards();
+    if(this.tab==="reports"){ v.innerHTML = this.viewReports(); this.drawReportsCharts(); }
+    if(this.tab==="audit")    v.innerHTML = this.viewAudit();
+  },
+
+  // -- Schedule
+  viewSchedule(){
+    const start = new Date(State.settings.startDate);
+    const wIdx = Math.max(0, weekIndex(today()));
+    const days = Array.from({length:7}, (_,i)=> addDays(start, wIdx*7 + i));
+    const dayStrs = days.map(d=>ymd(d));
+    const taskByDay = {};
+    dayStrs.forEach(d=> taskByDay[d] = State.tasks.filter(t=>t.date===d).sort((a,b)=>(a.startTime||"").localeCompare(b.startTime||"")));
+    const wk = weekRange(wIdx);
+    return `
+      <div class="parchment-card p-5">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h2 class="font-fantasy text-xl font-bold">Week ${wIdx+1} Schedule</h2>
+            <p class="text-sm opacity-70">${fmtDate(wk.start)} — ${fmtDate(wk.end)}</p>
+          </div>
+          <button class="btn-primary" onclick="App.cg.taskModal()"><i class="fas fa-plus mr-1"></i> New Task</button>
+        </div>
+        <div class="grid grid-cols-7 gap-3 mt-5">
+          ${dayStrs.map((d,i)=>{
+            const list = taskByDay[d];
+            return `<div class="bg-white/60 rounded-xl p-2 min-h-[200px]">
+              <div class="text-center text-sm font-bold">${days[i].toLocaleDateString("en-IN",{weekday:"short"})}</div>
+              <div class="text-center text-xs opacity-70 mb-2">${days[i].toLocaleDateString("en-IN",{day:"numeric", month:"short"})}</div>
+              <div class="space-y-1">
+                ${list.map(t=>{
+                  const c = State.categories.find(c=>c.id===t.categoryId);
+                  return `<button class="w-full text-left rounded-lg px-2 py-1 text-xs font-semibold text-white" style="background:${c?.color||"#475569"}" onclick="App.cg.taskModal('${t.id}')">
+                    <i class="fas ${c?.icon||"fa-circle"} mr-1"></i>${escapeHtml(t.title)} ${t.startTime?`<span class="opacity-80 ml-1">${t.startTime}</span>`:""}
+                  </button>`;
+                }).join("") || `<div class="text-xs opacity-60 italic text-center mt-2">No tasks</div>`}
+              </div>
+            </div>`;
+          }).join("")}
+        </div>
+      </div>`;
+  },
+
+  // -- Tasks list
+  viewTasks(){
+    const tasks = [...State.tasks].sort((a,b)=> (a.date||"").localeCompare(b.date||"") || (a.startTime||"").localeCompare(b.startTime||""));
+    return `
+      <div class="parchment-card p-5">
+        <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
+          <h2 class="font-fantasy text-xl font-bold">All Tasks</h2>
+          <div class="flex gap-2">
+            <button class="btn-primary" onclick="App.cg.taskModal()"><i class="fas fa-plus mr-1"></i> New Task</button>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead><tr class="text-left border-b border-amber-300">
+              <th class="py-2">Date</th><th>Time</th><th>Title</th><th>Category</th>
+              <th>Priority</th><th>Pts</th><th>Status</th><th>By</th><th></th></tr></thead>
+            <tbody>
+              ${tasks.map(t=>{
+                const c = State.categories.find(c=>c.id===t.categoryId);
+                const a = ACTOR_INFO[t.createdBy] || {label:t.createdBy||"system", chip:"bg-slate-300"};
+                const done = t.status==="done";
+                return `<tr class="border-b border-amber-200/40 hover:bg-amber-50/40">
+                  <td class="py-2 whitespace-nowrap">${fmtDate(t.date)}</td>
+                  <td class="whitespace-nowrap">${t.startTime||"--"}${t.durationMin?` <span class="opacity-60">(${t.durationMin}m)</span>`:""}</td>
+                  <td class="font-semibold ${done?"line-through opacity-60":""}">${escapeHtml(t.title)}</td>
+                  <td>${c?`<span class="pill" style="background:${c.color};color:#fff"><i class="fas ${c.icon}"></i>${c.name}</span>`:"-"}</td>
+                  <td><span class="pill priority-${t.priority||"M"} text-white">${t.priority||"M"}</span></td>
+                  <td>${t.points||0}</td>
+                  <td>${done?'<span class="pill bg-green-600 text-white">done</span>':'<span class="pill bg-amber-200">pending</span>'}</td>
+                  <td><span class="pill ${a.chip}">${a.emoji||""} ${a.label}</span></td>
+                  <td class="text-right whitespace-nowrap">
+                    <button class="btn-ghost" onclick="App.cg.taskModal('${t.id}')"><i class="fas fa-pen"></i></button>
+                    <button class="btn-ghost" onclick="App.cg.deleteTask('${t.id}')"><i class="fas fa-trash text-rose-700"></i></button>
+                  </td>
+                </tr>`;
+              }).join("") || `<tr><td colspan="9" class="py-8 text-center opacity-60">No tasks yet — create one!</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+  },
+
+  // -- Categories
+  viewCategories(){
+    return `
+      <div class="parchment-card p-5">
+        <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
+          <h2 class="font-fantasy text-xl font-bold">Categories</h2>
+          <button class="btn-primary" onclick="App.cg.categoryModal()"><i class="fas fa-plus mr-1"></i> New Category</button>
+        </div>
+        <div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          ${State.categories.map(c=>`
+            <div class="rounded-xl p-3 text-white relative" style="background:${c.color}">
+              <div class="flex items-center gap-2">
+                <i class="fas ${c.icon} text-xl"></i>
+                <div class="font-semibold">${escapeHtml(c.name)}</div>
+              </div>
+              <div class="text-xs opacity-80 mt-1">${State.tasks.filter(t=>t.categoryId===c.id).length} tasks</div>
+              <div class="absolute top-2 right-2 flex gap-1">
+                <button class="btn-ghost text-white" onclick="App.cg.categoryModal('${c.id}')"><i class="fas fa-pen"></i></button>
+                ${c.default?"":`<button class="btn-ghost text-white" onclick="App.cg.deleteCategory('${c.id}')"><i class="fas fa-trash"></i></button>`}
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      </div>`;
+  },
+
+  // -- Rewards
+  viewRewards(){
+    const catalog = State.rewards.filter(r=>r.type==="catalog");
+    const badges  = State.rewards.filter(r=>r.type==="badge");
+    const thresh  = State.rewards.filter(r=>r.type==="threshold");
+    const pending = State.redemptions.filter(r=>!r.fulfilledAt);
+    return `
+      <div class="space-y-6">
+        ${pending.length? `<div class="parchment-card p-5 border-l-4 border-emerald-600">
+          <h3 class="font-fantasy text-lg font-bold mb-2">🎁 Pending redemptions (${pending.length})</h3>
+          <div class="space-y-2">
+            ${pending.map(r=>{
+              const rw = State.rewards.find(x=>x.id===r.rewardId);
+              return `<div class="flex items-center justify-between bg-emerald-50 rounded-lg px-3 py-2">
+                <div><b>${rw?.icon||"🎁"} ${escapeHtml(rw?.name||"?")}</b> · ${r.pointsSpent} pts · ${new Date(r.atMs||Date.now()).toLocaleString("en-IN")}</div>
+                <button class="btn-primary" onclick="App.cg.fulfillRedemption('${r.id}')"><i class="fas fa-check mr-1"></i> Mark fulfilled</button>
+              </div>`;
+            }).join("")}
+          </div>
+        </div>`:""}
+
+        <div class="parchment-card p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-fantasy text-lg font-bold">🛒 Rewards Catalog (redeemable)</h3>
+            <button class="btn-primary" onclick="App.cg.rewardModal('catalog')"><i class="fas fa-plus mr-1"></i> New Reward</button>
+          </div>
+          <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
+            ${catalog.map(r=>`
+              <div class="bg-amber-50 rounded-xl p-3 border border-amber-200">
+                <div class="flex items-center gap-2"><span class="text-2xl">${r.icon||"🎁"}</span><b>${escapeHtml(r.name)}</b></div>
+                <div class="mt-1 text-amber-700 font-semibold">${r.pointsCost} pts</div>
+                <div class="mt-2 flex gap-1 justify-end">
+                  <button class="btn-ghost" onclick="App.cg.rewardModal('catalog','${r.id}')"><i class="fas fa-pen"></i></button>
+                  <button class="btn-ghost" onclick="App.cg.deleteReward('${r.id}')"><i class="fas fa-trash text-rose-700"></i></button>
+                </div>
+              </div>`).join("")||`<div class="opacity-60 italic">No rewards yet.</div>`}
+          </div>
+        </div>
+
+        <div class="parchment-card p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-fantasy text-lg font-bold">🏅 Badges</h3>
+            <button class="btn-primary" onclick="App.cg.rewardModal('badge')"><i class="fas fa-plus mr-1"></i> New Badge</button>
+          </div>
+          <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
+            ${badges.map(b=>`
+              <div class="bg-amber-50 rounded-xl p-3 border border-amber-200">
+                <div class="flex items-center gap-2"><span class="text-2xl">${b.icon||"🏅"}</span><b>${escapeHtml(b.name)}</b></div>
+                <div class="text-xs opacity-70 mt-1">${describeRule(b.rule)}</div>
+                <div class="mt-2 flex gap-1 justify-end">
+                  <button class="btn-ghost" onclick="App.cg.rewardModal('badge','${b.id}')"><i class="fas fa-pen"></i></button>
+                  <button class="btn-ghost" onclick="App.cg.deleteReward('${b.id}')"><i class="fas fa-trash text-rose-700"></i></button>
+                </div>
+              </div>`).join("")||""}
+          </div>
+        </div>
+
+        <div class="parchment-card p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-fantasy text-lg font-bold">🌟 Threshold Quests</h3>
+            <button class="btn-primary" onclick="App.cg.rewardModal('threshold')"><i class="fas fa-plus mr-1"></i> New Quest</button>
+          </div>
+          <div class="grid sm:grid-cols-2 gap-3">
+            ${thresh.map(t=>`
+              <div class="bg-amber-50 rounded-xl p-3 border border-amber-200">
+                <div class="flex items-center gap-2"><span class="text-2xl">${t.icon||"🌟"}</span><b>${escapeHtml(t.name)}</b></div>
+                <div class="text-xs opacity-70 mt-1">${describeRule(t.rule)}</div>
+                <div class="text-sm mt-1"><b>Reward:</b> ${escapeHtml(t.reward||"")}</div>
+                <div class="mt-2 flex gap-1 justify-end">
+                  <button class="btn-ghost" onclick="App.cg.rewardModal('threshold','${t.id}')"><i class="fas fa-pen"></i></button>
+                  <button class="btn-ghost" onclick="App.cg.deleteReward('${t.id}')"><i class="fas fa-trash text-rose-700"></i></button>
+                </div>
+              </div>`).join("")||""}
+          </div>
+        </div>
+      </div>`;
+  },
+
+  // -- Reports
+  viewReports(){
+    return `
+      <div class="parchment-card p-5">
+        <h2 class="font-fantasy text-xl font-bold mb-3">Reports & Dashboard</h2>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div><h3 class="font-semibold mb-1">Weekly completion %</h3><canvas id="chartWeekly" height="160"></canvas></div>
+          <div><h3 class="font-semibold mb-1">Points trend</h3><canvas id="chartPoints" height="160"></canvas></div>
+          <div><h3 class="font-semibold mb-1">Tasks by category</h3><canvas id="chartCat" height="160"></canvas></div>
+          <div><h3 class="font-semibold mb-1">Contributions by caregiver</h3><canvas id="chartActor" height="160"></canvas></div>
+        </div>
+        <div class="mt-5">
+          <h3 class="font-semibold mb-2">Daily completion heatmap (8 weeks × 7 days)</h3>
+          ${this.heatmapHtml()}
+        </div>
+      </div>`;
+  },
+  heatmapHtml(){
+    const start = new Date(State.settings.startDate);
+    let html = `<div class="grid gap-1" style="grid-template-columns:repeat(7,24px); grid-auto-rows:24px; width:max-content">`;
+    for(let w=0; w<8; w++){
+      for(let d=0; d<7; d++){
+        const date = ymd(addDays(start, w*7+d));
+        const dayTasks = State.tasks.filter(t=>t.date===date);
+        const done = dayTasks.filter(t=>t.status==="done").length;
+        const total = dayTasks.length;
+        const pct = total? done/total : 0;
+        const bg = total===0 ? "rgba(59,42,29,.10)" : `rgba(127,9,9,${.2 + pct*0.7})`;
+        html += `<div class="heatmap-cell" title="${date}: ${done}/${total}" style="background:${bg}"></div>`;
+      }
+    }
+    return html+"</div>";
+  },
+  drawReportsCharts(){
+    if(!window.Chart) return;
+    const start = new Date(State.settings.startDate);
+    const weeks = Array.from({length:8}, (_,w)=>{
+      const ds = Array.from({length:7}, (_,d)=>ymd(addDays(start, w*7+d)));
+      const t = State.tasks.filter(x=>ds.includes(x.date));
+      const done = t.filter(x=>x.status==="done");
+      return { idx:w, label:`W${w+1}`, total:t.length, done:done.length, pts: done.reduce((a,b)=>a+(b.points||0),0) };
+    });
+    [["chartWeekly","bar",{labels:weeks.map(w=>w.label),datasets:[{label:"% complete",data:weeks.map(w=>w.total?Math.round(100*w.done/w.total):0),backgroundColor:"#7f0909"}]}],
+     ["chartPoints","line",{labels:weeks.map(w=>w.label),datasets:[{label:"Points",data:weeks.map(w=>w.pts),borderColor:"#c9a14a",backgroundColor:"rgba(201,161,74,.3)",tension:.3,fill:true}]}]]
+     .forEach(([id,type,data])=>{ const c=document.getElementById(id); if(c) new Chart(c,{type, data, options:{plugins:{legend:{display:false}}}}); });
+    // category pie
+    const byCat = {};
+    State.tasks.forEach(t=>{ if(t.status==="done"){ byCat[t.categoryId] = (byCat[t.categoryId]||0)+1 }});
+    const catLabels = Object.keys(byCat).map(id=>State.categories.find(c=>c.id===id)?.name||id);
+    const catColors = Object.keys(byCat).map(id=>State.categories.find(c=>c.id===id)?.color||"#888");
+    const catC = document.getElementById("chartCat");
+    if(catC) new Chart(catC,{type:"doughnut", data:{labels:catLabels, datasets:[{data:Object.values(byCat),backgroundColor:catColors}]}});
+    // by actor
+    const byActor = { papa:0, mumma:0, dadi:0, baba:0 };
+    State.tasks.forEach(t=>{ if(byActor[t.createdBy]!=null) byActor[t.createdBy]++; });
+    const aC = document.getElementById("chartActor");
+    if(aC) new Chart(aC,{type:"bar", data:{labels:Object.keys(byActor), datasets:[{label:"Tasks authored", data:Object.values(byActor), backgroundColor:["#3b82f6","#ec4899","#a855f7","#14b8a6"]}]}, options:{plugins:{legend:{display:false}}}});
+  },
+
+  // -- Audit
+  viewAudit(){
+    const filterByActor = this.auditFilter||"";
+    const rows = State.audit.filter(a=>!filterByActor || a.actor===filterByActor);
+    return `
+      <div class="parchment-card p-5">
+        <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
+          <h2 class="font-fantasy text-xl font-bold">Activity Log</h2>
+          <div class="flex gap-1 flex-wrap">
+            <button class="pill ${!filterByActor?'bg-ink text-white':'bg-amber-100'}" onclick="App.cg.setAuditFilter('')">All</button>
+            ${["papa","mumma","dadi","baba","meher"].map(k=>{
+              const a = ACTOR_INFO[k];
+              return `<button class="pill ${filterByActor===k?a.chip:'bg-amber-100'}" onclick="App.cg.setAuditFilter('${k}')">${a.emoji} ${a.label}</button>`;
+            }).join("")}
+          </div>
+        </div>
+        <div class="space-y-2">
+          ${rows.map(a=>{
+            const ai = ACTOR_INFO[a.actor]||{label:a.actor,chip:"bg-slate-300"};
+            const tStr = a.atMs? new Date(a.atMs).toLocaleString("en-IN") : (a.at?.toDate?.()?.toLocaleString("en-IN") || "");
+            const canRestore = (a.action==="update"||a.action==="delete") && a.before && a.entityType==="task";
+            return `<details class="bg-amber-50/50 border border-amber-200 rounded-xl p-3">
+              <summary class="flex items-center gap-2 flex-wrap">
+                <span class="pill ${ai.chip}">${ai.emoji} ${ai.label}</span>
+                <span class="font-semibold">${a.action}</span>
+                <span class="opacity-70">${a.entityType}</span>
+                <span class="opacity-50 text-xs">${escapeHtml(a.entityId||"")}</span>
+                <span class="ml-auto opacity-60 text-xs">${tStr}</span>
+                ${canRestore?`<button class="btn-secondary text-xs" onclick="event.stopPropagation(); App.cg.restoreAudit('${a.id}')"><i class="fas fa-rotate-left mr-1"></i>Restore</button>`:""}
+              </summary>
+              <div class="grid md:grid-cols-2 gap-3 mt-3 text-xs">
+                <div><b>Before:</b><pre class="bg-white/70 p-2 rounded-lg overflow-x-auto">${escapeHtml(JSON.stringify(a.before, null, 2))}</pre></div>
+                <div><b>After:</b><pre class="bg-white/70 p-2 rounded-lg overflow-x-auto">${escapeHtml(JSON.stringify(a.after, null, 2))}</pre></div>
+              </div>
+            </details>`;
+          }).join("") || `<div class="opacity-60 italic">No activity yet.</div>`}
+        </div>
+      </div>`;
+  },
+
+  // -- Modals & actions
+  setAuditFilter(k){ this.auditFilter=k; this.renderView(); },
+
+  taskModal(id){
+    const t = id ? State.tasks.find(x=>x.id===id) : null;
+    const isEdit = !!t;
+    const data = t ? {...t} : {
+      title:"", description:"", expectations:"", categoryId: State.categories[0]?.id||"",
+      date: today(), startTime:"08:00", durationMin:30, quadrant:"Q2",
+      priority: "M", points:10, recurrence:"none", status:"pending"
+    };
+    const m = modal(`
+      <h3 class="font-fantasy text-2xl font-bold mb-2">${isEdit?"Edit":"New"} Task</h3>
+      <div class="grid md:grid-cols-2 gap-3">
+        <div class="md:col-span-2">
+          <label class="text-sm font-semibold">Title</label>
+          <input class="input mt-1" id="tfTitle" value="${escapeHtml(data.title)}" placeholder="e.g. Morning Riyaaz">
+        </div>
+        <div>
+          <label class="text-sm font-semibold">Category</label>
+          <select class="input mt-1" id="tfCat">
+            ${State.categories.map(c=>`<option value="${c.id}" ${c.id===data.categoryId?"selected":""}>${c.name}</option>`).join("")}
+          </select>
+        </div>
+        <div>
+          <label class="text-sm font-semibold">Points</label>
+          <input class="input mt-1" id="tfPts" type="number" min="0" max="200" value="${data.points}">
+        </div>
+        <div>
+          <label class="text-sm font-semibold">Date</label>
+          <input class="input mt-1" id="tfDate" type="date" value="${data.date}">
+        </div>
+        <div>
+          <label class="text-sm font-semibold">Start time</label>
+          <input class="input mt-1" id="tfTime" type="time" value="${data.startTime||""}">
+        </div>
+        <div>
+          <label class="text-sm font-semibold">Duration (min)</label>
+          <input class="input mt-1" id="tfDur" type="number" min="0" max="600" value="${data.durationMin||0}">
+        </div>
+        <div>
+          <label class="text-sm font-semibold">Recurrence</label>
+          <select class="input mt-1" id="tfRec">
+            <option value="none" ${data.recurrence==="none"?"selected":""}>One-time</option>
+            <option value="daily" ${data.recurrence==="daily"?"selected":""}>Every day (this week)</option>
+            <option value="weekdays" ${data.recurrence==="weekdays"?"selected":""}>Weekdays (Mon–Fri this week)</option>
+            <option value="weekly" ${data.recurrence==="weekly"?"selected":""}>Same day each week (all 8 weeks)</option>
+          </select>
+        </div>
+        <div class="md:col-span-2">
+          <label class="text-sm font-semibold">Eisenhower Priority Quadrant</label>
+          <div class="grid grid-cols-2 gap-2 mt-1 text-xs">
+            ${[
+              {q:"Q1",label:"Q1 · Urgent + Important",pr:"H"},
+              {q:"Q2",label:"Q2 · Important, not Urgent",pr:"M"},
+              {q:"Q3",label:"Q3 · Urgent, not Important",pr:"M"},
+              {q:"Q4",label:"Q4 · Neither",pr:"L"},
+            ].map(qq=>`
+              <button type="button" class="quadrant-zone ${data.quadrant===qq.q?"bg-amber-200":""}" onclick="App.cg.setQuadrant('${qq.q}','${qq.pr}', this)">
+                <div class="font-fantasy font-bold">${qq.label}</div>
+                <div class="opacity-70 mt-1">Meher color: <span class="pill priority-${qq.pr} text-white">${qq.pr}</span></div>
+              </button>`).join("")}
+          </div>
+          <input type="hidden" id="tfQ" value="${data.quadrant}">
+          <input type="hidden" id="tfP" value="${data.priority}">
+        </div>
+        <div class="md:col-span-2">
+          <label class="text-sm font-semibold">Description (what to do)</label>
+          <textarea class="input mt-1" id="tfDesc" rows="2" placeholder="What is this task?">${escapeHtml(data.description||"")}</textarea>
+        </div>
+        <div class="md:col-span-2">
+          <label class="text-sm font-semibold">Expectations (how good is "done")</label>
+          <textarea class="input mt-1" id="tfExp" rows="2" placeholder="What does success look like?">${escapeHtml(data.expectations||"")}</textarea>
+        </div>
+      </div>
+      <div class="mt-5 flex justify-end gap-2">
+        ${isEdit?`<button class="btn-ghost" onclick="App.cg.deleteTask('${data.id}')"><i class="fas fa-trash text-rose-700 mr-1"></i>Delete</button>`:""}
+        <button class="btn-secondary" data-close>Cancel</button>
+        <button class="btn-primary" id="tfSave">${isEdit?"Save changes":"Create task"}</button>
+      </div>
+    `);
+    m.el.querySelector("#tfSave").onclick = ()=>{
+      const payload = {
+        title: m.el.querySelector("#tfTitle").value.trim(),
+        description: m.el.querySelector("#tfDesc").value,
+        expectations: m.el.querySelector("#tfExp").value,
+        categoryId: m.el.querySelector("#tfCat").value,
+        date: m.el.querySelector("#tfDate").value,
+        startTime: m.el.querySelector("#tfTime").value,
+        durationMin: parseInt(m.el.querySelector("#tfDur").value)||0,
+        quadrant: m.el.querySelector("#tfQ").value,
+        priority: m.el.querySelector("#tfP").value,
+        points: parseInt(m.el.querySelector("#tfPts").value)||0,
+        recurrence: m.el.querySelector("#tfRec").value,
+        status: data.status||"pending"
+      };
+      if(!payload.title) return toast("Title is required");
+      this.saveTask(isEdit? data.id : null, payload, t).then(()=>m.close());
+    };
+  },
+  setQuadrant(q, pr, btn){
+    document.querySelectorAll(".quadrant-zone").forEach(b=>b.classList.remove("bg-amber-200"));
+    btn.classList.add("bg-amber-200");
+    document.getElementById("tfQ").value = q;
+    document.getElementById("tfP").value = pr;
+  },
+  async saveTask(id, payload, before){
+    const now = serverTimestamp();
+    if(id){
+      await updateDoc(doc(db,"tasks",id), { ...payload, updatedBy: State.me, updatedAt: now });
+      await writeAudit("update","task",id, before, payload);
+      toast("✨ Task updated");
+    } else {
+      const occurrences = expandRecurrence(payload);
+      const ids = [];
+      for(const occ of occurrences){
+        const ref = await addDoc(collection(db,"tasks"), { ...occ, createdBy: State.me, createdAt: now, updatedBy: State.me, updatedAt: now });
+        ids.push(ref.id);
+        await writeAudit("create","task",ref.id, null, occ);
+      }
+      toast(`✨ Created ${ids.length} task${ids.length>1?"s":""}`);
+    }
+  },
+  async deleteTask(id){
+    if(!confirm("Delete this task?")) return;
+    const before = State.tasks.find(t=>t.id===id);
+    await deleteDoc(doc(db,"tasks",id));
+    await writeAudit("delete","task",id, before, null);
+    toast("Task deleted");
+  },
+  async restoreAudit(auditId){
+    const a = State.audit.find(x=>x.id===auditId);
+    if(!a || !a.before) return;
+    if(a.action==="delete"){
+      const ref = await addDoc(collection(db,a.entityType==="task"?"tasks":"rewards"), a.before);
+      await writeAudit("create",a.entityType, ref.id, null, a.before);
+    } else if(a.action==="update"){
+      await updateDoc(doc(db, a.entityType==="task"?"tasks":"rewards", a.entityId), a.before);
+      await writeAudit("update",a.entityType, a.entityId, State.tasks.find(t=>t.id===a.entityId), a.before);
+    }
+    toast("↺ Restored");
+  },
+
+  categoryModal(id){
+    const c = id ? State.categories.find(x=>x.id===id) : null;
+    const data = c || { name:"", icon:"fa-star", color:"#7c3aed" };
+    const m = modal(`
+      <h3 class="font-fantasy text-2xl font-bold mb-3">${c?"Edit":"New"} Category</h3>
+      <div class="grid md:grid-cols-2 gap-3">
+        <div><label class="text-sm font-semibold">Name</label><input class="input mt-1" id="cfName" value="${escapeHtml(data.name)}"></div>
+        <div><label class="text-sm font-semibold">Color</label><input class="input mt-1" id="cfColor" type="color" value="${data.color}"></div>
+        <div class="md:col-span-2"><label class="text-sm font-semibold">FontAwesome icon (e.g. fa-book, fa-music)</label><input class="input mt-1" id="cfIcon" value="${data.icon}"></div>
+      </div>
+      <div class="mt-5 flex justify-end gap-2">
+        <button class="btn-secondary" data-close>Cancel</button>
+        <button class="btn-primary" id="cfSave">${c?"Save":"Create"}</button>
+      </div>
+    `);
+    m.el.querySelector("#cfSave").onclick = async ()=>{
+      const payload = {
+        name: m.el.querySelector("#cfName").value.trim(),
+        color: m.el.querySelector("#cfColor").value,
+        icon: m.el.querySelector("#cfIcon").value.trim()||"fa-star",
+        active:true
+      };
+      if(!payload.name) return toast("Name required");
+      if(c){
+        await updateDoc(doc(db,"categories",c.id), payload);
+        await writeAudit("update","category",c.id,c,payload);
+      } else {
+        const newId = payload.name.toLowerCase().replace(/[^a-z0-9]+/g,"-").slice(0,40)+"-"+Math.random().toString(36).slice(2,6);
+        await setDoc(doc(db,"categories",newId), { ...payload, default:false, createdBy: State.me, createdAt: serverTimestamp() });
+        await writeAudit("create","category",newId,null,payload);
+      }
+      m.close();
+    };
+  },
+  async deleteCategory(id){
+    if(!confirm("Delete this category? Tasks tied to it will keep their reference.")) return;
+    const before = State.categories.find(c=>c.id===id);
+    await deleteDoc(doc(db,"categories",id));
+    await writeAudit("delete","category",id,before,null);
+  },
+
+  rewardModal(type, id){
+    const r = id ? State.rewards.find(x=>x.id===id) : null;
+    const data = r || { type, name:"", icon:"🎁", pointsCost:50, rule:{}, reward:"" };
+    let ruleHtml = "";
+    if(type==="badge"){
+      ruleHtml = `
+        <label class="text-sm font-semibold">Rule type</label>
+        <select class="input mt-1" id="rfRuleType">
+          <option value="weekly-category-count">Weekly count in category</option>
+          <option value="total-category-count">Total count in category</option>
+          <option value="category-streak">Daily streak in category</option>
+          <option value="any-streak">Any-task daily streak</option>
+          <option value="total-points">Total points reached</option>
+        </select>
+        <div class="grid md:grid-cols-2 gap-3 mt-3" id="rfRuleParams"></div>
+      `;
+    }
+    if(type==="threshold"){
+      ruleHtml = `
+        <label class="text-sm font-semibold">Rule type</label>
+        <select class="input mt-1" id="rfRuleType">
+          <option value="weekly-completion-pct">Weekly completion %</option>
+          <option value="weekly-priority-all">All priority-X tasks this week</option>
+        </select>
+        <div class="grid md:grid-cols-2 gap-3 mt-3" id="rfRuleParams"></div>
+        <label class="text-sm font-semibold mt-3 block">Reward (text shown when unlocked)</label>
+        <input class="input mt-1" id="rfRewardText" value="${escapeHtml(data.reward||"")}">
+      `;
+    }
+    const m = modal(`
+      <h3 class="font-fantasy text-2xl font-bold mb-3">${r?"Edit":"New"} ${type==="catalog"?"Reward":type==="badge"?"Badge":"Threshold Quest"}</h3>
+      <div class="grid md:grid-cols-2 gap-3">
+        <div class="md:col-span-2"><label class="text-sm font-semibold">Name</label><input class="input mt-1" id="rfName" value="${escapeHtml(data.name)}"></div>
+        <div><label class="text-sm font-semibold">Icon (emoji)</label><input class="input mt-1" id="rfIcon" value="${data.icon||"🎁"}"></div>
+        ${type==="catalog"?`<div><label class="text-sm font-semibold">Point cost</label><input class="input mt-1" id="rfCost" type="number" min="0" value="${data.pointsCost||0}"></div>`:""}
+      </div>
+      ${ruleHtml? `<div class="mt-3">${ruleHtml}</div>`:""}
+      <div class="mt-5 flex justify-end gap-2">
+        <button class="btn-secondary" data-close>Cancel</button>
+        <button class="btn-primary" id="rfSave">${r?"Save":"Create"}</button>
+      </div>
+    `);
+    const renderRuleParams = ()=>{
+      if(type==="badge"){
+        const rt = m.el.querySelector("#rfRuleType").value;
+        const p = m.el.querySelector("#rfRuleParams"); p.innerHTML="";
+        if(rt==="weekly-category-count"||rt==="total-category-count"||rt==="category-streak"){
+          p.innerHTML = `<div><label class="text-sm font-semibold">Category</label><select class="input mt-1" id="rfCat">${State.categories.map(c=>`<option value="${c.id}">${c.name}</option>`).join("")}</select></div>
+            <div><label class="text-sm font-semibold">${rt==="category-streak"?"Days":"Count"}</label><input class="input mt-1" id="rfN" type="number" min="1" value="${data.rule?.count||data.rule?.days||3}"></div>`;
+          if(data.rule?.categoryId) p.querySelector("#rfCat").value = data.rule.categoryId;
+        }
+        if(rt==="any-streak"){
+          p.innerHTML = `<div><label class="text-sm font-semibold">Days</label><input class="input mt-1" id="rfN" type="number" min="1" value="${data.rule?.days||5}"></div>`;
+        }
+        if(rt==="total-points"){
+          p.innerHTML = `<div><label class="text-sm font-semibold">Points</label><input class="input mt-1" id="rfN" type="number" min="1" value="${data.rule?.points||100}"></div>`;
+        }
+      } else if(type==="threshold"){
+        const rt = m.el.querySelector("#rfRuleType").value;
+        const p = m.el.querySelector("#rfRuleParams"); p.innerHTML="";
+        if(rt==="weekly-completion-pct"){
+          p.innerHTML = `<div><label class="text-sm font-semibold">Completion %</label><input class="input mt-1" id="rfN" type="number" min="1" max="100" value="${data.rule?.pct||80}"></div>`;
+        } else {
+          p.innerHTML = `<div><label class="text-sm font-semibold">Priority</label><select class="input mt-1" id="rfN"><option value="H">High</option><option value="M">Medium</option><option value="L">Low</option></select></div>`;
+        }
+      }
+    };
+    if(ruleHtml){
+      const sel = m.el.querySelector("#rfRuleType");
+      if(data.rule?.type) sel.value = data.rule.type;
+      sel.addEventListener("change", renderRuleParams);
+      renderRuleParams();
+    }
+    m.el.querySelector("#rfSave").onclick = async ()=>{
+      const payload = {
+        type, name: m.el.querySelector("#rfName").value.trim(),
+        icon: m.el.querySelector("#rfIcon").value || "🎁"
+      };
+      if(!payload.name) return toast("Name required");
+      if(type==="catalog"){
+        payload.pointsCost = parseInt(m.el.querySelector("#rfCost").value)||0;
+      } else if(type==="badge"){
+        const rt = m.el.querySelector("#rfRuleType").value;
+        payload.rule = { type:rt };
+        if(["weekly-category-count","total-category-count"].includes(rt)){
+          payload.rule.categoryId = m.el.querySelector("#rfCat").value;
+          payload.rule.count = parseInt(m.el.querySelector("#rfN").value)||1;
+        }
+        if(rt==="category-streak"){
+          payload.rule.categoryId = m.el.querySelector("#rfCat").value;
+          payload.rule.days = parseInt(m.el.querySelector("#rfN").value)||1;
+        }
+        if(rt==="any-streak"){ payload.rule.days = parseInt(m.el.querySelector("#rfN").value)||5; }
+        if(rt==="total-points"){ payload.rule.points = parseInt(m.el.querySelector("#rfN").value)||100; }
+      } else if(type==="threshold"){
+        const rt = m.el.querySelector("#rfRuleType").value;
+        payload.rule = { type:rt };
+        if(rt==="weekly-completion-pct"){ payload.rule.pct = parseInt(m.el.querySelector("#rfN").value)||80; }
+        else { payload.rule.priority = m.el.querySelector("#rfN").value; }
+        payload.reward = m.el.querySelector("#rfRewardText").value;
+      }
+      if(r){
+        await updateDoc(doc(db,"rewards",r.id), payload);
+        await writeAudit("update","reward",r.id,r,payload);
+      } else {
+        const newId = payload.name.toLowerCase().replace(/[^a-z0-9]+/g,"-").slice(0,40)+"-"+Math.random().toString(36).slice(2,6);
+        await setDoc(doc(db,"rewards",newId), { ...payload, createdBy: State.me });
+        await writeAudit("create","reward",newId,null,payload);
+      }
+      m.close();
+    };
+  },
+  async deleteReward(id){
+    if(!confirm("Delete this?")) return;
+    const before = State.rewards.find(r=>r.id===id);
+    await deleteDoc(doc(db,"rewards",id));
+    await writeAudit("delete","reward",id,before,null);
+  },
+  async fulfillRedemption(id){
+    await updateDoc(doc(db,"redemptions",id), { fulfilledAt: serverTimestamp(), fulfilledBy: State.me });
+    await writeAudit("update","redemption",id,null,{fulfilled:true});
+    toast("Marked as fulfilled");
+  },
+};
+
+// ---------------------------------------------------------------------------
+//  MEHER UI
+// ---------------------------------------------------------------------------
+const MEHER_TABS = [
+  { id:"today",   icon:"fa-sun",            label:"Today's Chapter" },
+  { id:"week",    icon:"fa-book-bookmark",  label:"This Week" },
+  { id:"map",     icon:"fa-map",            label:"8-Week Quest" },
+  { id:"spell",   icon:"fa-wand-magic-sparkles", label:"My Spell Book" },
+  { id:"hall",    icon:"fa-trophy",         label:"Hall of Fame" },
+];
+const MeherUI = {
+  tab:"today",
+  show(){
+    document.getElementById("setupWizard").classList.add("hidden");
+    document.getElementById("loginScreen").classList.add("hidden");
+    document.getElementById("caregiverPanel").classList.add("hidden");
+    document.getElementById("meherPanel").classList.remove("hidden");
+    const h = HOUSES[State.meher.house || State.settings?.house || "gryffindor"];
+    document.getElementById("meherSubheader").textContent =
+      `${h.emoji} ${h.name} House · ${new Date().toLocaleDateString("en-IN",{weekday:"long", day:"numeric", month:"long"})}`;
+    document.getElementById("meherTotalPoints").textContent = State.meher.totalPoints || 0;
+    document.getElementById("meherStreak").textContent = State.meher.streakDays || 0;
+    const tabs = document.getElementById("meherTabs"); tabs.innerHTML="";
+    MEHER_TABS.forEach(t=>{
+      const b = document.createElement("button");
+      b.className = "tab-btn"+(this.tab===t.id?" active":"")+" text-white/90";
+      if(this.tab===t.id) b.style.background="rgba(0,0,0,.35)";
+      b.innerHTML = `<i class="fas ${t.icon} mr-1"></i> ${t.label}`;
+      b.onclick = ()=>{ this.tab = t.id; this.show(); };
+      tabs.appendChild(b);
+    });
+    this.renderView();
+    Reminders.checkSoon();
+  },
+  renderView(){
+    const v = document.getElementById("meherView");
+    if(this.tab==="today") v.innerHTML = this.viewToday();
+    if(this.tab==="week")  v.innerHTML = this.viewWeek();
+    if(this.tab==="map")   v.innerHTML = this.viewMap();
+    if(this.tab==="spell") v.innerHTML = this.viewSpell();
+    if(this.tab==="hall"){ v.innerHTML = this.viewHall(); this.drawHallCharts(); }
+  },
+
+  viewToday(){
+    const d = today();
+    const list = State.tasks.filter(t=>t.date===d).sort((a,b)=>(a.startTime||"").localeCompare(b.startTime||""));
+    const done = list.filter(t=>t.status==="done").length;
+    const totalPts = list.reduce((s,t)=>s+(t.points||0),0);
+    const earnedPts = list.filter(t=>t.status==="done").reduce((s,t)=>s+(t.points||0),0);
+    return `
+      <div class="parchment-card p-5 mb-4">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h2 class="font-fantasy text-2xl font-bold">📖 Today's Chapter</h2>
+            <p class="opacity-80 mt-1">${list.length} adventures await · ${done} completed · ${earnedPts}/${totalPts} points earned</p>
+          </div>
+          <div class="w-48 bg-amber-100 rounded-full h-3 overflow-hidden">
+            <div class="h-full house-gradient" style="width:${list.length? Math.round(100*done/list.length):0}%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="space-y-3">
+        ${list.length===0 ? `<div class="parchment-card p-8 text-center opacity-70 italic">No tasks today — enjoy your free time! ✨</div>` :
+          list.map(t=>this.taskCardHtml(t)).join("")}
+      </div>`;
+  },
+  taskCardHtml(t){
+    const c = State.categories.find(c=>c.id===t.categoryId);
+    const done = t.status==="done";
+    return `
+      <details class="parchment-card p-4 ${done?"opacity-70":""} pop">
+        <summary class="flex items-center gap-3 flex-wrap">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white text-xl shrink-0" style="background:${c?.color||"#475569"}">
+            <i class="fas ${c?.icon||"fa-circle"}"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="font-fantasy text-lg font-bold ${done?"line-through":""}">${escapeHtml(t.title)}</div>
+            <div class="text-sm opacity-70 flex items-center gap-2 flex-wrap">
+              ${t.startTime?`<span><i class="fas fa-clock"></i> ${t.startTime}${t.durationMin?` · ${t.durationMin} min`:""}</span>`:""}
+              ${c?`<span class="pill" style="background:${c.color};color:#fff">${c.name}</span>`:""}
+            </div>
+          </div>
+          <span class="pill priority-${t.priority||"M"} text-white">${t.priority||"M"}</span>
+          <span class="pill bg-amber-100 ink">✨ ${t.points||0} pts</span>
+          ${done? '<span class="pill bg-green-600 text-white"><i class="fas fa-check"></i> Done!</span>'
+                : `<button class="btn-primary" onclick="event.preventDefault(); App.meher.complete('${t.id}', this)"><i class="fas fa-wand-magic-sparkles mr-1"></i> I did it!</button>`}
+        </summary>
+        <div class="mt-3 pl-15 grid md:grid-cols-2 gap-3 text-sm">
+          ${t.description?`<div class="bg-amber-50 rounded-xl p-3"><b>What to do</b><br>${escapeHtml(t.description)}</div>`:""}
+          ${t.expectations?`<div class="bg-amber-50 rounded-xl p-3"><b>How to nail it</b><br>${escapeHtml(t.expectations)}</div>`:""}
+        </div>
+      </details>`;
+  },
+
+  viewWeek(){
+    const wIdx = Math.max(0, weekIndex(today()));
+    const start = new Date(State.settings.startDate);
+    const days = Array.from({length:7}, (_,i)=>{
+      const d = addDays(start, wIdx*7 + i);
+      const ds = ymd(d);
+      const list = State.tasks.filter(t=>t.date===ds);
+      const done = list.filter(t=>t.status==="done").length;
+      return { d, ds, list, done };
+    });
+    return `
+      <div class="parchment-card p-5 mb-4">
+        <h2 class="font-fantasy text-2xl font-bold">📚 This Week's Story</h2>
+        <p class="opacity-80">Week ${wIdx+1} of 8</p>
+      </div>
+      <div class="grid md:grid-cols-7 gap-3">
+        ${days.map(d=>`
+          <div class="parchment-card p-3 ${ds_isToday(d.ds)?"ring-2 ring-amber-500":""}">
+            <div class="text-center font-bold">${d.d.toLocaleDateString("en-IN",{weekday:"short"})}</div>
+            <div class="text-center text-xs opacity-70 mb-2">${d.d.toLocaleDateString("en-IN",{day:"numeric", month:"short"})}</div>
+            <div class="text-center mb-2 text-xs">${d.done}/${d.list.length}</div>
+            <div class="bg-amber-100 h-2 rounded-full overflow-hidden">
+              <div class="house-gradient h-full" style="width:${d.list.length? Math.round(100*d.done/d.list.length):0}%"></div>
+            </div>
+            <div class="mt-2 space-y-1">
+              ${d.list.slice(0,5).map(t=>{
+                const c = State.categories.find(c=>c.id===t.categoryId);
+                return `<div class="text-xs rounded-md px-1.5 py-1 text-white truncate ${t.status==='done'?'opacity-60 line-through':''}" style="background:${c?.color||"#475569"}">${escapeHtml(t.title)}</div>`;
+              }).join("")}
+              ${d.list.length>5?`<div class="text-xs opacity-60">+${d.list.length-5} more</div>`:""}
+            </div>
+          </div>
+        `).join("")}
+      </div>`;
+  },
+
+  viewMap(){
+    const start = new Date(State.settings.startDate);
+    const cur = Math.max(0, weekIndex(today()));
+    return `
+      <div class="parchment-card p-5 mb-4">
+        <h2 class="font-fantasy text-2xl font-bold">🗺️ The 8-Week Quest</h2>
+        <p class="opacity-80">From ${fmtDate(State.settings.startDate)} until summer ends</p>
+      </div>
+      <div class="scrollx flex gap-3 py-3">
+        ${Array.from({length:8},(_,w)=>{
+          const s = addDays(start, w*7); const e = addDays(s,6);
+          const tasks = State.tasks.filter(t=> weekIndex(t.date)===w);
+          const done = tasks.filter(t=>t.status==="done").length;
+          const pct = tasks.length? Math.round(100*done/tasks.length):0;
+          const status = w<cur && pct>=80 ? "completed" : w===cur ? "current" : w<cur ? "" : "locked";
+          return `<div class="quest-chapter ${status}">
+            <div class="font-fantasy font-bold text-lg">Chapter ${w+1}</div>
+            <div class="text-xs opacity-70">${ymd(s).slice(5)} → ${ymd(e).slice(5)}</div>
+            <div class="mt-2 text-3xl text-center">${w===cur?"🪄":(status==="completed"?"📜":(status==="locked"?"🔒":"📖"))}</div>
+            <div class="mt-2 text-sm text-center">${done}/${tasks.length} tasks</div>
+            <div class="bg-amber-100 h-2 rounded-full mt-1 overflow-hidden"><div class="house-gradient h-full" style="width:${pct}%"></div></div>
+          </div>`;
+        }).join("")}
+      </div>`;
+  },
+
+  viewSpell(){
+    const badges = State.rewards.filter(r=>r.type==="badge");
+    const earned = new Set((State.meher.earnedBadges||[]).map(b=>b.id));
+    const catalog = State.rewards.filter(r=>r.type==="catalog");
+    const thresh = State.rewards.filter(r=>r.type==="threshold");
+    const pts = State.meher.totalPoints||0;
+    return `
+      <div class="parchment-card p-5 mb-4">
+        <h2 class="font-fantasy text-2xl font-bold">📕 My Spell Book</h2>
+        <p class="opacity-80">Your magical collection</p>
+      </div>
+
+      <div class="parchment-card p-5 mb-4">
+        <h3 class="font-fantasy text-xl font-bold mb-3">🏅 Badges</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          ${badges.map(b=>{
+            const got = earned.has(b.id);
+            return `<div class="badge-card ${got?"":"badge-locked"} bg-amber-50 rounded-xl p-3 text-center" title="${describeRule(b.rule)}">
+              <div class="text-4xl">${b.icon||"🏅"}</div>
+              <div class="font-fantasy font-bold mt-1">${escapeHtml(b.name)}</div>
+              <div class="text-xs opacity-70 mt-1">${describeRule(b.rule)}</div>
+              ${got?'<div class="mt-1 pill bg-emerald-600 text-white text-xs">Earned!</div>':'<div class="mt-1 pill bg-slate-300 text-xs">Locked</div>'}
+            </div>`;
+          }).join("")||""}
+        </div>
+      </div>
+
+      <div class="parchment-card p-5 mb-4">
+        <h3 class="font-fantasy text-xl font-bold mb-3">🛒 Reward Shop · You have <span class="text-amber-700">${pts}</span> pts</h3>
+        <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
+          ${catalog.map(r=>{
+            const canBuy = pts >= (r.pointsCost||0);
+            return `<div class="bg-amber-50 rounded-xl p-3 border border-amber-200 ${canBuy?"":"opacity-60"}">
+              <div class="flex items-center gap-2"><span class="text-3xl">${r.icon||"🎁"}</span><b>${escapeHtml(r.name)}</b></div>
+              <div class="mt-1 text-amber-700 font-semibold">${r.pointsCost} pts</div>
+              <button class="btn-primary mt-2 w-full" ${canBuy?"":"disabled style='opacity:.5; cursor:not-allowed'"} onclick="App.meher.redeem('${r.id}')">
+                <i class="fas fa-cart-shopping mr-1"></i> Redeem
+              </button>
+            </div>`;
+          }).join("")||""}
+        </div>
+      </div>
+
+      <div class="parchment-card p-5">
+        <h3 class="font-fantasy text-xl font-bold mb-3">🌟 Threshold Quests</h3>
+        <div class="grid md:grid-cols-2 gap-3">
+          ${thresh.map(t=>{
+            const prog = thresholdProgress(t);
+            return `<div class="bg-amber-50 rounded-xl p-3 border border-amber-200">
+              <div class="flex items-center gap-2"><span class="text-2xl">${t.icon||"🌟"}</span><b>${escapeHtml(t.name)}</b></div>
+              <div class="text-xs opacity-70 mt-1">${describeRule(t.rule)}</div>
+              <div class="bg-amber-100 h-3 rounded-full mt-2 overflow-hidden"><div class="house-gradient h-full" style="width:${prog.pct}%"></div></div>
+              <div class="text-xs mt-1">${prog.label} → <b>${escapeHtml(t.reward||"")}</b></div>
+            </div>`;
+          }).join("")||""}
+        </div>
+      </div>`;
+  },
+
+  viewHall(){
+    const totalDone = State.tasks.filter(t=>t.status==="done").length;
+    const total = State.tasks.length;
+    const pct = total? Math.round(100*totalDone/total):0;
+    const byCat = {};
+    State.tasks.filter(t=>t.status==="done").forEach(t=>{ byCat[t.categoryId]=(byCat[t.categoryId]||0)+1 });
+    const topCat = Object.entries(byCat).sort((a,b)=>b[1]-a[1])[0];
+    const topCatName = topCat? (State.categories.find(c=>c.id===topCat[0])?.name||"-") : "—";
+    return `
+      <div class="parchment-card p-5 mb-4">
+        <h2 class="font-fantasy text-2xl font-bold">🏆 Hall of Fame</h2>
+        <p class="opacity-80">Your magical journey so far</p>
+      </div>
+      <div class="grid md:grid-cols-4 gap-3 mb-4">
+        ${[
+          ["✨ Total points", State.meher.totalPoints||0],
+          ["📚 Tasks done", totalDone],
+          ["📊 Completion", pct+"%"],
+          ["⭐ Top category", topCatName],
+        ].map(([l,v])=>`<div class="parchment-card p-4 text-center"><div class="text-sm opacity-70">${l}</div><div class="font-fantasy text-3xl font-bold mt-1">${v}</div></div>`).join("")}
+      </div>
+      <div class="parchment-card p-5 mb-4">
+        <h3 class="font-fantasy text-lg font-bold mb-2">Points across the 8 weeks</h3>
+        <canvas id="hallPoints" height="160"></canvas>
+      </div>
+      <div class="parchment-card p-5">
+        <h3 class="font-fantasy text-lg font-bold mb-2">Where I spent my time</h3>
+        <canvas id="hallCat" height="160"></canvas>
+      </div>`;
+  },
+  drawHallCharts(){
+    const start = new Date(State.settings.startDate);
+    const weeks = Array.from({length:8},(_,w)=>{
+      const ds = Array.from({length:7},(_,d)=>ymd(addDays(start,w*7+d)));
+      return State.tasks.filter(t=>ds.includes(t.date) && t.status==="done").reduce((s,t)=>s+(t.points||0),0);
+    });
+    const c1 = document.getElementById("hallPoints");
+    if(c1) new Chart(c1,{type:"line", data:{labels:weeks.map((_,i)=>`W${i+1}`), datasets:[{label:"Points", data:weeks, borderColor:"#c9a14a", backgroundColor:"rgba(201,161,74,.3)", tension:.3, fill:true}]}, options:{plugins:{legend:{display:false}}}});
+    const byCat = {};
+    State.tasks.filter(t=>t.status==="done").forEach(t=>{ byCat[t.categoryId]=(byCat[t.categoryId]||0)+1 });
+    const c2 = document.getElementById("hallCat");
+    if(c2) new Chart(c2,{type:"doughnut", data:{labels:Object.keys(byCat).map(id=>State.categories.find(c=>c.id===id)?.name||id), datasets:[{data:Object.values(byCat), backgroundColor:Object.keys(byCat).map(id=>State.categories.find(c=>c.id===id)?.color||"#888")}]}});
+  },
+
+  async complete(taskId, btn){
+    const t = State.tasks.find(x=>x.id===taskId);
+    if(!t || t.status==="done") return;
+    Theme.celebrate(btn);
+    if(navigator.vibrate) navigator.vibrate(40);
+    await updateDoc(doc(db,"tasks",taskId), { status:"done", completedAt: serverTimestamp(), completedAtMs: Date.now() });
+    await writeAudit("complete","task",taskId, t, {...t, status:"done"});
+    // Update meher state
+    const cur = State.meher;
+    const total = (cur.totalPoints||0) + (t.points||0);
+    const today_ = today();
+    const lastDay = cur.lastCompletedAt ? ymd(new Date(cur.lastCompletedAt)) : null;
+    let streak = cur.streakDays||0;
+    if(lastDay !== today_){
+      const yest = ymd(addDays(new Date(today_),-1));
+      streak = lastDay===yest ? streak+1 : 1;
+    }
+    const earned = new Set((cur.earnedBadges||[]).map(b=>b.id));
+    const newlyEarned = [];
+    State.rewards.filter(r=>r.type==="badge").forEach(b=>{
+      if(earned.has(b.id)) return;
+      if(badgeMet(b, total, streak)){
+        earned.add(b.id);
+        newlyEarned.push(b);
+      }
+    });
+    await updateDoc(doc(db,"meher_state","main"), {
+      totalPoints: total,
+      streakDays: streak,
+      lastCompletedAt: new Date().toISOString(),
+      earnedBadges: [...earned].map(id=>({id, at: Date.now()}))
+    });
+    toast(`+${t.points||0} points! ✨`);
+    if(newlyEarned.length){
+      setTimeout(()=>{
+        modal(`<div class="text-center">
+          <div class="text-6xl">${newlyEarned[0].icon}</div>
+          <div class="font-fantasy text-2xl font-bold mt-3">Badge Unlocked!</div>
+          <div class="font-fantasy text-xl">${escapeHtml(newlyEarned[0].name)}</div>
+          <div class="opacity-70 mt-2">${describeRule(newlyEarned[0].rule)}</div>
+          ${newlyEarned.length>1?`<div class="mt-3 text-sm">+ ${newlyEarned.length-1} more badge${newlyEarned.length>2?"s":""}!</div>`:""}
+          <button class="btn-primary mt-4" data-close>Amazing! ✨</button>
+        </div>`);
+        confetti({ particleCount:200, spread:120, origin:{y:.4} });
+        Theme.ghungroo();
+      }, 600);
+    }
+  },
+  async redeem(rewardId){
+    const r = State.rewards.find(x=>x.id===rewardId);
+    if(!r) return;
+    if((State.meher.totalPoints||0) < r.pointsCost) return toast("Not enough points yet!");
+    if(!confirm(`Redeem "${r.name}" for ${r.pointsCost} points?`)) return;
+    const ref = await addDoc(collection(db,"redemptions"), {
+      rewardId, pointsSpent:r.pointsCost, redeemedAt: serverTimestamp(), atMs: Date.now()
+    });
+    await updateDoc(doc(db,"meher_state","main"), { totalPoints: (State.meher.totalPoints||0) - r.pointsCost });
+    await writeAudit("redeem","reward",rewardId, null, {rewardId, pointsSpent:r.pointsCost});
+    toast(`🎁 Redeemed! Your caregivers have been notified.`);
+    Theme.celebrate();
+  },
+};
+function ds_isToday(s){ return s===today(); }
+
+// ---------------------------------------------------------------------------
+//  Badge / threshold logic
+// ---------------------------------------------------------------------------
+function describeRule(r){
+  if(!r) return "";
+  switch(r.type){
+    case "weekly-category-count":{ const c=State.categories.find(c=>c.id===r.categoryId); return `Complete ${r.count} ${c?.name||""} tasks in a week`; }
+    case "total-category-count": { const c=State.categories.find(c=>c.id===r.categoryId); return `Complete ${r.count} ${c?.name||""} tasks total`; }
+    case "category-streak":      { const c=State.categories.find(c=>c.id===r.categoryId); return `${r.days}-day streak of ${c?.name||""}`; }
+    case "any-streak":           return `${r.days}-day streak of any tasks`;
+    case "total-points":         return `Earn ${r.points} points total`;
+    case "weekly-completion-pct":return `Complete ${r.pct}% of weekly tasks`;
+    case "weekly-priority-all":  return `Complete every priority-${r.priority} task in a week`;
+  }
+  return "";
+}
+function badgeMet(b, totalPoints, streakDays){
+  const r=b.rule||{}; const done = State.tasks.filter(t=>t.status==="done");
+  if(r.type==="total-category-count") return done.filter(t=>t.categoryId===r.categoryId).length >= r.count;
+  if(r.type==="weekly-category-count"){
+    const w = weekIndex(today());
+    const wr = weekRange(w);
+    return done.filter(t=>t.categoryId===r.categoryId && t.date>=wr.start && t.date<=wr.end).length >= r.count;
+  }
+  if(r.type==="category-streak"){
+    return categoryStreakDays(r.categoryId) >= r.days;
+  }
+  if(r.type==="any-streak") return streakDays >= r.days;
+  if(r.type==="total-points") return totalPoints >= r.points;
+  return false;
+}
+function categoryStreakDays(categoryId){
+  let n=0; let d = new Date(today());
+  while(true){
+    const ds = ymd(d);
+    const has = State.tasks.some(t=>t.date===ds && t.categoryId===categoryId && t.status==="done");
+    if(!has) break;
+    n++; d = addDays(d,-1);
+  }
+  return n;
+}
+function thresholdProgress(t){
+  const r = t.rule||{};
+  if(r.type==="weekly-completion-pct"){
+    const w = weekIndex(today()); const wr = weekRange(w);
+    const list = State.tasks.filter(t=>t.date>=wr.start && t.date<=wr.end);
+    const pct = list.length? Math.round(100*list.filter(x=>x.status==="done").length/list.length) : 0;
+    return { pct: Math.min(100, Math.round(100*pct/r.pct)), label:`${pct}% of ${r.pct}% target` };
+  }
+  if(r.type==="weekly-priority-all"){
+    const w = weekIndex(today()); const wr = weekRange(w);
+    const list = State.tasks.filter(t=>t.date>=wr.start && t.date<=wr.end && t.priority===r.priority);
+    const done = list.filter(x=>x.status==="done").length;
+    return { pct: list.length? Math.round(100*done/list.length):0, label:`${done}/${list.length} ${r.priority}-priority tasks` };
+  }
+  return { pct:0, label:"" };
+}
+
+// ---------------------------------------------------------------------------
+//  Recurrence
+// ---------------------------------------------------------------------------
+function expandRecurrence(task){
+  const { recurrence } = task;
+  if(recurrence==="none") return [task];
+  const out = [];
+  const baseDate = new Date(task.date);
+  if(recurrence==="daily"||recurrence==="weekdays"){
+    const wIdx = weekIndex(task.date);
+    const start = new Date(State.settings.startDate);
+    const ws = addDays(start, wIdx*7);
+    for(let i=0;i<7;i++){
+      const d = addDays(ws, i);
+      if(recurrence==="weekdays" && (d.getDay()===0 || d.getDay()===6)) continue;
+      out.push({ ...task, date: ymd(d), recurrence:"none" });
+    }
+  } else if(recurrence==="weekly"){
+    const start = new Date(State.settings.startDate);
+    const dow = baseDate.getDay();
+    const baseW = weekIndex(task.date);
+    for(let w=baseW; w<8; w++){
+      const ws = addDays(start, w*7);
+      for(let i=0;i<7;i++){
+        const d = addDays(ws, i);
+        if(d.getDay()===dow){ out.push({ ...task, date: ymd(d), recurrence:"none" }); break; }
+      }
+    }
+  }
+  return out.length? out : [task];
+}
+
+// ---------------------------------------------------------------------------
+//  Reminders
+// ---------------------------------------------------------------------------
+const Reminders = {
+  snoozed:{},
+  init(){
+    if("Notification" in window && Notification.permission==="default"){
+      // request lazily on first Meher interaction
+      document.addEventListener("click", function once(){ try{ Notification.requestPermission(); }catch(e){} document.removeEventListener("click",once); }, {once:true});
+    }
+    setInterval(()=>this.checkSoon(), 60000);
+  },
+  checkSoon(){
+    if(State.me!=="meher") return;
+    const now = new Date();
+    const nowMin = now.getHours()*60 + now.getMinutes();
+    const d = today();
+    State.tasks.filter(t=>t.date===d && t.status!=="done" && t.startTime).forEach(t=>{
+      const [hh,mm] = t.startTime.split(":").map(Number);
+      const m = hh*60+mm;
+      const key = t.id+"_"+d;
+      if(this.snoozed[key] && Date.now()<this.snoozed[key]) return;
+      if(m>=nowMin && m<=nowMin+1){
+        this.fire(t);
+      }
+    });
+  },
+  fire(t){
+    const c = State.categories.find(c=>c.id===t.categoryId);
+    if("Notification" in window && Notification.permission==="granted"){
+      new Notification(`✨ ${t.title}`, { body:`${t.startTime} · ${t.durationMin||0} min · ${c?.name||""}`, silent:false });
+    }
+    Theme.ghungroo();
+    const host = document.getElementById("reminderHost");
+    host.innerHTML = `
+      <div class="reminder-banner">
+        <div class="text-2xl">⏰</div>
+        <div class="flex-1">
+          <div class="font-fantasy font-bold">${escapeHtml(t.title)}</div>
+          <div class="text-sm opacity-70">${t.startTime} · ${t.durationMin||0} min</div>
+        </div>
+        <button class="btn-secondary" onclick="App.reminders.snooze('${t.id}')">Snooze 10m</button>
+        <button class="btn-primary" onclick="App.reminders.dismiss(); App.meher.complete('${t.id}', this)">I did it!</button>
+        <button class="btn-ghost" onclick="App.reminders.dismiss()"><i class="fas fa-xmark"></i></button>
+      </div>`;
+  },
+  snooze(id){ this.snoozed[id+"_"+today()] = Date.now()+10*60*1000; this.dismiss(); toast("Snoozed 10 minutes"); },
+  dismiss(){ document.getElementById("reminderHost").innerHTML=""; },
+};
+
+// ---------------------------------------------------------------------------
+//  Utilities
+// ---------------------------------------------------------------------------
+function escapeHtml(s){ return String(s==null?"":s).replace(/[&<>"']/g, c=>({'&':"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+// re-render current view
+function render(){
+  if(!State.settings) return;
+  if(State.me==="meher" && !document.getElementById("meherPanel").classList.contains("hidden")) MeherUI.show();
+  else if(State.me && State.me!=="meher" && !document.getElementById("caregiverPanel").classList.contains("hidden")) CaregiverUI.show();
+}
+
+// ---------------------------------------------------------------------------
+//  Settings (per-caregiver)
+// ---------------------------------------------------------------------------
+function openSettings(){
+  const m = modal(`
+    <h3 class="font-fantasy text-2xl font-bold mb-3">Settings</h3>
+    <div class="space-y-3 text-sm">
+      <div>
+        <label class="font-semibold">Vacation start date</label>
+        <input class="input mt-1" type="date" id="setStart" value="${State.settings.startDate}">
+      </div>
+      <div>
+        <label class="font-semibold">House theme</label>
+        <select class="input mt-1" id="setHouse">
+          ${Object.entries(HOUSES).map(([k,h])=>`<option value="${k}" ${State.settings.house===k?"selected":""}>${h.emoji} ${h.name}</option>`).join("")}
+        </select>
+      </div>
+      <div>
+        <p class="font-semibold mt-3">Change a PIN</p>
+        <div class="grid grid-cols-2 gap-2 mt-1">
+          <select class="input" id="setPinUser">${["papa","mumma","dadi","baba","meher"].map(k=>`<option value="${k}">${ACTOR_INFO[k].label}</option>`).join("")}</select>
+          <input class="input" id="setPinNew" type="password" inputmode="numeric" pattern="\\d{4,6}" minlength="4" maxlength="6" placeholder="new 4–6 digit PIN">
+        </div>
+        <button class="btn-secondary mt-2" id="btnChangePin"><i class="fas fa-key mr-1"></i> Update PIN</button>
+      </div>
+    </div>
+    <div class="mt-5 flex justify-end gap-2">
+      <button class="btn-secondary" data-close>Close</button>
+      <button class="btn-primary" id="setSave">Save</button>
+    </div>
+  `);
+  m.el.querySelector("#setSave").onclick = async ()=>{
+    const start = m.el.querySelector("#setStart").value;
+    const house = m.el.querySelector("#setHouse").value;
+    await updateDoc(doc(db,"settings","app"), { startDate: start, house });
+    await updateDoc(doc(db,"meher_state","main"), { house });
+    Theme.apply(house);
+    await writeAudit("update","settings","app", State.settings, { startDate:start, house });
+    m.close(); toast("Saved");
+  };
+  m.el.querySelector("#btnChangePin").onclick = async ()=>{
+    const u = m.el.querySelector("#setPinUser").value;
+    const p = m.el.querySelector("#setPinNew").value;
+    if(!/^\d{4,6}$/.test(p)) return toast("PIN must be 4–6 digits");
+    const h = await hashPin(p);
+    await updateDoc(doc(db,"settings","pins"), { [u]: h });
+    await writeAudit("update","pin", u, null, { changed:true });
+    toast(`${ACTOR_INFO[u].label}'s PIN updated`);
+    m.el.querySelector("#setPinNew").value="";
+  };
+}
+
+// ---------------------------------------------------------------------------
+//  Boot
+// ---------------------------------------------------------------------------
+window.App = {
+  setup:Setup, auth:Auth, cg:CaregiverUI, meher:MeherUI,
+  theme:Theme, reminders:Reminders, ui:{ openSettings }
+};
+
+if(configValid){
+  signInAnonymously(auth).then(()=>{
+    onAuthStateChanged(auth, (user)=>{
+      if(user){ subscribeAll(); }
+    });
+  }).catch(e=>{
+    console.error(e);
+    document.getElementById("firebaseSetupBanner").classList.remove("hidden");
+    document.getElementById("firebaseSetupBanner").querySelector("p").textContent = "Firebase couldn't sign in. Check Authentication → Anonymous is enabled in your Firebase console.";
+  });
+}
+Theme.spawnSparkles();
+Reminders.init();
+
+</script>
+</body>
+</html>
