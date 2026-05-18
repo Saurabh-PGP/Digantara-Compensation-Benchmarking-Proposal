@@ -332,7 +332,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/fireba
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import {
   getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, addDoc,
-  collection, onSnapshot, query, orderBy, limit, serverTimestamp, writeBatch
+  collection, onSnapshot, query, orderBy, limit, serverTimestamp, writeBatch, runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 // ---------------------------------------------------------------------------
@@ -1683,39 +1683,68 @@ const MeherUI = {
     if(c2) new Chart(c2,{type:"doughnut", data:{labels:Object.keys(byCat).map(id=>State.categories.find(c=>c.id===id)?.name||id), datasets:[{data:Object.values(byCat), backgroundColor:Object.keys(byCat).map(id=>State.categories.find(c=>c.id===id)?.color||"#888")}]}});
   },
 
+  _completing:{},
   async complete(taskId, btn){
-    const t = State.tasks.find(x=>x.id===taskId);
-    if(!t || t.status==="done") return;
+    // Guard against rapid double-tap re-entering this function before the
+    // transaction commits. Firestore's transaction will also reject duplicate
+    // status flips, but blocking here avoids spurious confetti/audit writes.
+    if(this._completing[taskId]) return;
+    const cached = State.tasks.find(x=>x.id===taskId);
+    if(!cached || cached.status==="done") return;
+    if(btn){ btn.disabled = true; btn.style.opacity = ".5"; btn.style.pointerEvents = "none"; }
+    this._completing[taskId] = true;
+    let awardedPoints = 0;
+    let newlyEarned = [];
+    let didTransition = false;
+    try{
+      await runTransaction(db, async (tx)=>{
+        const taskRef = doc(db,"tasks",taskId);
+        const taskSnap = await tx.get(taskRef);
+        if(!taskSnap.exists()) return;
+        const taskData = taskSnap.data();
+        if(taskData.status==="done") return; // already completed - skip
+        const meherRef = doc(db,"meher_state","main");
+        const meherSnap = await tx.get(meherRef);
+        const cur = meherSnap.exists() ? meherSnap.data() : {};
+        const pts = taskData.points || 0;
+        const total = (cur.totalPoints||0) + pts;
+        const today_ = today();
+        const lastDay = cur.lastCompletedAt ? ymd(new Date(cur.lastCompletedAt)) : null;
+        let streak = cur.streakDays||0;
+        if(lastDay !== today_){
+          const yest = ymd(addDays(new Date(today_),-1));
+          streak = lastDay===yest ? streak+1 : 1;
+        }
+        const earned = new Set((cur.earnedBadges||[]).map(b=>b.id));
+        newlyEarned = [];
+        State.rewards.filter(r=>r.type==="badge").forEach(b=>{
+          if(earned.has(b.id)) return;
+          if(badgeMet(b, total, streak)){
+            earned.add(b.id);
+            newlyEarned.push(b);
+          }
+        });
+        tx.update(taskRef, { status:"done", completedAt: serverTimestamp(), completedAtMs: Date.now() });
+        tx.update(meherRef, {
+          totalPoints: total,
+          streakDays: streak,
+          lastCompletedAt: new Date().toISOString(),
+          earnedBadges: [...earned].map(id=>({id, at: Date.now()}))
+        });
+        awardedPoints = pts;
+        didTransition = true;
+      });
+    } catch(e){
+      console.error(e);
+      toast("Couldn't save: "+(e.message||e));
+    } finally {
+      delete this._completing[taskId];
+    }
+    if(!didTransition){ return; }
     Theme.celebrate(btn);
     if(navigator.vibrate) navigator.vibrate(40);
-    await updateDoc(doc(db,"tasks",taskId), { status:"done", completedAt: serverTimestamp(), completedAtMs: Date.now() });
-    await writeAudit("complete","task",taskId, t, {...t, status:"done"});
-    // Update meher state
-    const cur = State.meher;
-    const total = (cur.totalPoints||0) + (t.points||0);
-    const today_ = today();
-    const lastDay = cur.lastCompletedAt ? ymd(new Date(cur.lastCompletedAt)) : null;
-    let streak = cur.streakDays||0;
-    if(lastDay !== today_){
-      const yest = ymd(addDays(new Date(today_),-1));
-      streak = lastDay===yest ? streak+1 : 1;
-    }
-    const earned = new Set((cur.earnedBadges||[]).map(b=>b.id));
-    const newlyEarned = [];
-    State.rewards.filter(r=>r.type==="badge").forEach(b=>{
-      if(earned.has(b.id)) return;
-      if(badgeMet(b, total, streak)){
-        earned.add(b.id);
-        newlyEarned.push(b);
-      }
-    });
-    await updateDoc(doc(db,"meher_state","main"), {
-      totalPoints: total,
-      streakDays: streak,
-      lastCompletedAt: new Date().toISOString(),
-      earnedBadges: [...earned].map(id=>({id, at: Date.now()}))
-    });
-    toast(`+${t.points||0} points! ✨`);
+    await writeAudit("complete","task",taskId, cached, {...cached, status:"done"});
+    toast(`+${awardedPoints} points! ✨`);
     if(newlyEarned.length){
       setTimeout(()=>{
         modal(`<div class="text-center">
@@ -1731,20 +1760,71 @@ const MeherUI = {
       }, 600);
     }
   },
+  _redeeming:false,
   async redeem(rewardId){
+    if(this._redeeming) return;
     const r = State.rewards.find(x=>x.id===rewardId);
     if(!r) return;
     if((State.meher.totalPoints||0) < r.pointsCost) return toast("Not enough points yet!");
     if(!confirm(`Redeem "${r.name}" for ${r.pointsCost} points?`)) return;
-    const ref = await addDoc(collection(db,"redemptions"), {
-      rewardId, pointsSpent:r.pointsCost, redeemedAt: serverTimestamp(), atMs: Date.now()
-    });
-    await updateDoc(doc(db,"meher_state","main"), { totalPoints: (State.meher.totalPoints||0) - r.pointsCost });
+    this._redeeming = true;
+    let ok = false;
+    try{
+      await runTransaction(db, async (tx)=>{
+        const meherRef = doc(db,"meher_state","main");
+        const meherSnap = await tx.get(meherRef);
+        const cur = meherSnap.exists() ? meherSnap.data() : {};
+        const have = cur.totalPoints || 0;
+        if(have < r.pointsCost) throw new Error("Not enough points");
+        tx.update(meherRef, { totalPoints: have - r.pointsCost });
+        const redemptionRef = doc(collection(db,"redemptions"));
+        tx.set(redemptionRef, {
+          rewardId, pointsSpent: r.pointsCost,
+          redeemedAt: serverTimestamp(), atMs: Date.now()
+        });
+      });
+      ok = true;
+    } catch(e){
+      toast("Couldn't redeem: "+(e.message||e));
+    } finally {
+      this._redeeming = false;
+    }
+    if(!ok) return;
     await writeAudit("redeem","reward",rewardId, null, {rewardId, pointsSpent:r.pointsCost});
     toast(`🎁 Redeemed! Your caregivers have been notified.`);
     Theme.celebrate();
   },
 };
+
+// Recompute Meher's house points, streak, and earned badges from raw task
+// history. Used (a) as a one-time correction for any historical drift and
+// (b) as a self-heal button caregivers can re-run if numbers ever look off.
+async function recomputeMeherTotals(){
+  const done = State.tasks.filter(t=>t.status==="done");
+  const earnedPts = done.reduce((s,t)=>s+(t.points||0),0);
+  const spentPts = State.redemptions.reduce((s,r)=>s+(r.pointsSpent||0),0);
+  const total = Math.max(0, earnedPts - spentPts);
+  let streak = 0; let d = new Date(today());
+  while(true){
+    const ds = ymd(d);
+    if(!State.tasks.some(t=>t.date===ds && t.status==="done")) break;
+    streak++; d = addDays(d,-1);
+  }
+  const earnedBadges = [];
+  State.rewards.filter(r=>r.type==="badge").forEach(b=>{
+    if(badgeMet(b, total, streak)) earnedBadges.push({id:b.id, at: Date.now()});
+  });
+  const lastDone = done.filter(t=>t.completedAtMs).sort((a,b)=>(b.completedAtMs||0)-(a.completedAtMs||0))[0];
+  const before = { ...State.meher };
+  await updateDoc(doc(db,"meher_state","main"), {
+    totalPoints: total,
+    streakDays: streak,
+    earnedBadges,
+    lastCompletedAt: lastDone ? new Date(lastDone.completedAtMs).toISOString() : null
+  });
+  await writeAudit("recompute","meher_state","main", before, { totalPoints: total, streakDays: streak, earnedBadges });
+  toast(`✓ Recomputed: ${total} House Points · ${streak}-day streak`);
+}
 function ds_isToday(s){ return s===today(); }
 
 // ---------------------------------------------------------------------------
@@ -1924,6 +2004,15 @@ function openSettings(){
         </div>
         <button class="btn-secondary mt-2" id="btnChangePin"><i class="fas fa-key mr-1"></i> Update PIN</button>
       </div>
+
+      <div class="mt-3 pt-3 border-t border-amber-300">
+        <p class="font-semibold">House Points self-heal</p>
+        <p class="text-xs opacity-70 mb-2">Recomputes Meher's total points, streak, and earned badges from her actual completed tasks and redemptions. Safe to run any time.</p>
+        <div class="text-sm bg-amber-50 rounded-lg p-2 mb-2">
+          Current: <b>${State.meher.totalPoints||0}</b> pts · <b>${State.meher.streakDays||0}</b>-day streak
+        </div>
+        <button class="btn-secondary" id="btnRecompute"><i class="fas fa-rotate mr-1"></i> Recompute House Points</button>
+      </div>
     </div>
     <div class="mt-5 flex justify-end gap-2">
       <button class="btn-secondary" data-close>Close</button>
@@ -1948,6 +2037,13 @@ function openSettings(){
     await writeAudit("update","pin", u, null, { changed:true });
     toast(`${ACTOR_INFO[u].label}'s PIN updated`);
     m.el.querySelector("#setPinNew").value="";
+  };
+  m.el.querySelector("#btnRecompute").onclick = async ()=>{
+    if(!confirm("Recompute Meher's House Points from her completed tasks? This corrects any drift.")) return;
+    const btn = m.el.querySelector("#btnRecompute");
+    btn.disabled = true; btn.innerHTML='<i class="fas fa-spinner fa-spin mr-1"></i> Recomputing...';
+    try { await recomputeMeherTotals(); m.close(); }
+    catch(e){ toast("Failed: "+(e.message||e)); btn.disabled=false; btn.innerHTML='<i class="fas fa-rotate mr-1"></i> Recompute House Points'; }
   };
 }
 
