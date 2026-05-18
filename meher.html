@@ -400,19 +400,20 @@ const SEED_REWARDS_CATALOG = [
   { id:"r-late",      name:"Late bedtime (+30 min)",      icon:"🌙", pointsCost:25 },
   { id:"r-book",      name:"A new book of her choice",    icon:"📖", pointsCost:80 },
   { id:"r-outing",    name:"Special outing with Dadi/Baba",icon:"🎡", pointsCost:100 },
-  // v2 — innovative additions
-  { id:"r-v2-diagonalley", name:"Diagon Alley mall trip",          icon:"🛍️", pointsCost:175 },
-  { id:"r-v2-marathon",    name:"Magical movie marathon (3 films)",icon:"🎞️", pointsCost:70 },
-  { id:"r-v2-boss-dinner", name:"Boss of dinner — pick the menu",  icon:"🍝", pointsCost:35 },
-  { id:"r-v2-pajama",      name:"Pajama-all-day pass",             icon:"🦥", pointsCost:30 },
-  { id:"r-v2-storytime",   name:"Storytime with Dadi & Baba",      icon:"📜", pointsCost:40 },
-  { id:"r-v2-bake",        name:"Bake-along with Mumma/Papa",      icon:"🧁", pointsCost:65 },
-  { id:"r-v2-bookshop",    name:"Bookshop adventure",              icon:"📚", pointsCost:90 },
-  { id:"r-v2-feast",       name:"Hogwarts feast night (themed dinner)", icon:"🍗", pointsCost:85 },
-  { id:"r-v2-no-chores",   name:"No-chores day pass",              icon:"🧚", pointsCost:55 },
-  { id:"r-v2-sunday-queen",name:"Sunday Queen — plan the whole day",icon:"👑", pointsCost:120 },
-  { id:"r-v2-art-haul",    name:"Art & craft supplies haul",       icon:"🎨", pointsCost:110 },
-  { id:"r-v2-trampoline",  name:"Trampoline park hour",            icon:"🤸", pointsCost:130 },
+  // v2 — innovative additions, priced against the family's updated scale
+  //       (book 1,500 → LEGO set 100,000)
+  { id:"r-v2-pajama",      name:"Pajama-all-day pass",             icon:"🦥", pointsCost:2000  },
+  { id:"r-v2-boss-dinner", name:"Boss of dinner — pick the menu",  icon:"🍝", pointsCost:2500  },
+  { id:"r-v2-art-haul",    name:"Art & craft supplies haul",       icon:"🎨", pointsCost:3500  },
+  { id:"r-v2-storytime",   name:"Storytime with Dadi & Baba",      icon:"📜", pointsCost:4000  },
+  { id:"r-v2-bake",        name:"Bake-along with Mumma/Papa",      icon:"🧁", pointsCost:5000  },
+  { id:"r-v2-bookshop",    name:"Bookshop adventure",              icon:"📚", pointsCost:6000  },
+  { id:"r-v2-feast",       name:"Hogwarts feast night (themed dinner)", icon:"🍗", pointsCost:10000 },
+  { id:"r-v2-no-chores",   name:"No-chores day pass",              icon:"🧚", pointsCost:12000 },
+  { id:"r-v2-sunday-queen",name:"Sunday Queen — plan the whole day",icon:"👑", pointsCost:20000 },
+  { id:"r-v2-trampoline",  name:"Trampoline park hour",            icon:"🤸", pointsCost:25000 },
+  { id:"r-v2-diagonalley", name:"Diagon Alley mall trip",          icon:"🛍️", pointsCost:50000 },
+  { id:"r-v2-marathon",    name:"Magical movie marathon (3 films)",icon:"🎞️", pointsCost:80000 },
 ];
 
 // Mirror the v2 additions here so the auto-migration knows which IDs were
@@ -463,7 +464,10 @@ function subscribeAll(){
     State.tasks = snap.docs.map(d=>({id:d.id,...d.data()})); render();
   });
   Listeners.rewards = onSnapshot(collection(db,"rewards"), snap=>{
-    State.rewards = snap.docs.map(d=>({id:d.id,...d.data()})); render();
+    State.rewards = snap.docs.map(d=>({id:d.id,...d.data()}));
+    _rewardsLoadedOnce = true;
+    maybeSeedV2();
+    render();
   });
   Listeners.redemptions = onSnapshot(collection(db,"redemptions"), snap=>{
     State.redemptions = snap.docs.map(d=>({id:d.id,...d.data()})); render();
@@ -483,26 +487,46 @@ function subscribeAll(){
 //  on /settings/app; once a version's migration runs the flag prevents it
 //  from re-running (so deleting a v2 reward keeps it deleted).
 // ---------------------------------------------------------------------------
-let _seedV2InFlight = false;
+let _seedMigrationInFlight = false;
+let _rewardsLoadedOnce = false;
 async function maybeSeedV2(){
-  if(_seedV2InFlight) return;
+  // Now handles v2 (install) + v3 (reprice) in one pass.
+  if(_seedMigrationInFlight) return;
   if(!State.settings) return;
-  if((State.settings.seedVersion||1) >= 2) return;
-  _seedV2InFlight = true;
+  if((State.settings.seedVersion||1) >= 3) return;
+  // Need rewards collection populated so we don't accidentally overwrite a
+  // caregiver's customised name/icon on an existing v2 reward.
+  if(!_rewardsLoadedOnce) return;
+  _seedMigrationInFlight = true;
   try{
     const batch = writeBatch(db);
+    const existing = new Map(State.rewards.map(r=>[r.id,r]));
+    let added = 0, repriced = 0;
     SEED_REWARDS_CATALOG
       .filter(r => SEED_REWARDS_V2_IDS.has(r.id))
-      .forEach(r => batch.set(doc(db,"rewards",r.id), {
-        type:"catalog", name:r.name, icon:r.icon, pointsCost:r.pointsCost,
-        createdBy:"system"
-      }));
-    batch.update(doc(db,"settings","app"), { seedVersion: 2 });
+      .forEach(r => {
+        if(existing.has(r.id)){
+          // Only touch pointsCost — leave any caregiver edits to name/icon alone.
+          if(existing.get(r.id).pointsCost !== r.pointsCost){
+            batch.update(doc(db,"rewards",r.id), { pointsCost: r.pointsCost });
+            repriced++;
+          }
+        } else {
+          batch.set(doc(db,"rewards",r.id), {
+            type:"catalog", name:r.name, icon:r.icon, pointsCost:r.pointsCost,
+            createdBy:"system"
+          });
+          added++;
+        }
+      });
+    batch.update(doc(db,"settings","app"), { seedVersion: 3 });
     await batch.commit();
-    toast(`✨ ${SEED_REWARDS_V2_IDS.size} new rewards added to the shop!`);
+    if(added && repriced)      toast(`✨ ${added} new rewards added, ${repriced} repriced`);
+    else if(added)             toast(`✨ ${added} new rewards added to the shop!`);
+    else if(repriced)          toast(`✨ ${repriced} new rewards repriced to match your scale`);
   } catch(e){
-    console.error("seedV2 failed", e);
-    _seedV2InFlight = false;
+    console.error("seed migration failed", e);
+    _seedMigrationInFlight = false;
   }
 }
 
@@ -707,7 +731,7 @@ const Setup = {
       const batch = writeBatch(db);
       batch.set(doc(db,"settings","app"), {
         startDate: this.data.startDate, weeks:8, house: this.data.house,
-        seedVersion: 2,
+        seedVersion: 3,
         createdAt: serverTimestamp(),
       });
       batch.set(doc(db,"settings","pins"), pinDocs);
