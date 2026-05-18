@@ -390,6 +390,7 @@ const SEED_BADGES = [
 ];
 
 const SEED_REWARDS_CATALOG = [
+  // Original v1 catalog
   { id:"r-icecream",  name:"Ice Cream Outing",            icon:"🍦", pointsCost:50 },
   { id:"r-lego",      name:"New LEGO mini-set",           icon:"🧱", pointsCost:200 },
   { id:"r-movie",     name:"Pick the Disney movie night", icon:"🎬", pointsCost:30 },
@@ -399,7 +400,28 @@ const SEED_REWARDS_CATALOG = [
   { id:"r-late",      name:"Late bedtime (+30 min)",      icon:"🌙", pointsCost:25 },
   { id:"r-book",      name:"A new book of her choice",    icon:"📖", pointsCost:80 },
   { id:"r-outing",    name:"Special outing with Dadi/Baba",icon:"🎡", pointsCost:100 },
+  // v2 — innovative additions
+  { id:"r-v2-diagonalley", name:"Diagon Alley mall trip",          icon:"🛍️", pointsCost:175 },
+  { id:"r-v2-marathon",    name:"Magical movie marathon (3 films)",icon:"🎞️", pointsCost:70 },
+  { id:"r-v2-boss-dinner", name:"Boss of dinner — pick the menu",  icon:"🍝", pointsCost:35 },
+  { id:"r-v2-pajama",      name:"Pajama-all-day pass",             icon:"🦥", pointsCost:30 },
+  { id:"r-v2-storytime",   name:"Storytime with Dadi & Baba",      icon:"📜", pointsCost:40 },
+  { id:"r-v2-bake",        name:"Bake-along with Mumma/Papa",      icon:"🧁", pointsCost:65 },
+  { id:"r-v2-bookshop",    name:"Bookshop adventure",              icon:"📚", pointsCost:90 },
+  { id:"r-v2-feast",       name:"Hogwarts feast night (themed dinner)", icon:"🍗", pointsCost:85 },
+  { id:"r-v2-no-chores",   name:"No-chores day pass",              icon:"🧚", pointsCost:55 },
+  { id:"r-v2-sunday-queen",name:"Sunday Queen — plan the whole day",icon:"👑", pointsCost:120 },
+  { id:"r-v2-art-haul",    name:"Art & craft supplies haul",       icon:"🎨", pointsCost:110 },
+  { id:"r-v2-trampoline",  name:"Trampoline park hour",            icon:"🤸", pointsCost:130 },
 ];
+
+// Mirror the v2 additions here so the auto-migration knows which IDs were
+// introduced in seedVersion 2.
+const SEED_REWARDS_V2_IDS = new Set([
+  "r-v2-diagonalley","r-v2-marathon","r-v2-boss-dinner","r-v2-pajama","r-v2-storytime",
+  "r-v2-bake","r-v2-bookshop","r-v2-feast","r-v2-no-chores","r-v2-sunday-queen",
+  "r-v2-art-haul","r-v2-trampoline",
+]);
 
 const SEED_THRESHOLDS = [
   { id:"t-80weekly",   name:"80% Weekly Quest",   icon:"🌟", rule:{type:"weekly-completion-pct", pct:80}, reward:"Surprise treat from the caregivers!" },
@@ -432,7 +454,7 @@ const Listeners = {};
 
 function subscribeAll(){
   if(!db) return;
-  Listeners.settings = onSnapshot(doc(db,"settings","app"), s=>{ State.settings = s.exists()?s.data():null; routeBoot(); render(); });
+  Listeners.settings = onSnapshot(doc(db,"settings","app"), s=>{ State.settings = s.exists()?s.data():null; routeBoot(); render(); maybeSeedV2(); });
   Listeners.pins     = onSnapshot(doc(db,"settings","pins"), s=>{ State.pins = s.exists()?s.data():null; });
   Listeners.categories = onSnapshot(collection(db,"categories"), snap=>{
     State.categories = snap.docs.map(d=>({id:d.id,...d.data()})); render();
@@ -453,6 +475,35 @@ function subscribeAll(){
   Listeners.audit = onSnapshot(query(collection(db,"audit_log"), orderBy("at","desc"), limit(200)), snap=>{
     State.audit = snap.docs.map(d=>({id:d.id,...d.data()})); render();
   });
+}
+
+// ---------------------------------------------------------------------------
+//  Seed migrations — adds new default rewards to existing installs without
+//  clobbering anything the family has already customised. seedVersion lives
+//  on /settings/app; once a version's migration runs the flag prevents it
+//  from re-running (so deleting a v2 reward keeps it deleted).
+// ---------------------------------------------------------------------------
+let _seedV2InFlight = false;
+async function maybeSeedV2(){
+  if(_seedV2InFlight) return;
+  if(!State.settings) return;
+  if((State.settings.seedVersion||1) >= 2) return;
+  _seedV2InFlight = true;
+  try{
+    const batch = writeBatch(db);
+    SEED_REWARDS_CATALOG
+      .filter(r => SEED_REWARDS_V2_IDS.has(r.id))
+      .forEach(r => batch.set(doc(db,"rewards",r.id), {
+        type:"catalog", name:r.name, icon:r.icon, pointsCost:r.pointsCost,
+        createdBy:"system"
+      }));
+    batch.update(doc(db,"settings","app"), { seedVersion: 2 });
+    await batch.commit();
+    toast(`✨ ${SEED_REWARDS_V2_IDS.size} new rewards added to the shop!`);
+  } catch(e){
+    console.error("seedV2 failed", e);
+    _seedV2InFlight = false;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -656,6 +707,7 @@ const Setup = {
       const batch = writeBatch(db);
       batch.set(doc(db,"settings","app"), {
         startDate: this.data.startDate, weeks:8, house: this.data.house,
+        seedVersion: 2,
         createdAt: serverTimestamp(),
       });
       batch.set(doc(db,"settings","pins"), pinDocs);
