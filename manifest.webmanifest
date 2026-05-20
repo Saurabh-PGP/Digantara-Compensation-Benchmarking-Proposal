@@ -1,0 +1,25 @@
+{
+  "name": "Meher's Magical Vacation",
+  "short_name": "Meher's Vacation",
+  "description": "An 8-week magical summer vacation planner for Meher",
+  "start_url": "./meher.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0a1530",
+  "theme_color": "#0e1a40",
+  "icons": [
+    {
+      "src": "./meher-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./meher-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
