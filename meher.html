@@ -72,6 +72,9 @@
   }
   .btn-ghost:hover{ background:rgba(59,42,29,.08) }
   .pill{ display:inline-flex; align-items:center; gap:.35rem; padding:.18rem .6rem; border-radius:9999px; font-size:.75rem; font-weight:600 }
+  .pill.is-active{ background:var(--ink); color:#fff8e2 }
+  .pill-btn{ cursor:pointer; transition:transform .08s ease }
+  .pill-btn:active{ transform:scale(.95) }
   .input{
     background:#fffdf3; border:1px solid rgba(59,42,29,.25); border-radius:12px;
     padding:.55rem .8rem; width:100%; color:var(--ink); font-family:inherit;
@@ -956,47 +959,78 @@ const CaregiverUI = {
       </div>`;
   },
 
-  // -- Tasks list
+  // -- Tasks list: grouped by date in collapsible tiles, with status filter
   viewTasks(){
-    const tasks = [...State.tasks].sort((a,b)=> (a.date||"").localeCompare(b.date||"") || (a.startTime||"").localeCompare(b.startTime||""));
+    const filter = this.statusFilter || "all";
+    const matches = t => filter==="pending" ? t.status!=="done"
+                       : filter==="done"    ? t.status==="done"
+                       : true;
+    const groups = {};
+    State.tasks.filter(matches).forEach(t=>{
+      const k = t.date || "(no date)";
+      (groups[k] = groups[k]||[]).push(t);
+    });
+    const dates = Object.keys(groups).sort();
+    const today_ = today();
     return `
       <div class="parchment-card p-5">
-        <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
+        <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
           <h2 class="font-fantasy text-xl font-bold">All Tasks</h2>
-          <div class="flex gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
+            ${statusFilterChips(filter, "App.cg.setStatusFilter")}
             <button class="btn-primary" onclick="App.cg.taskModal()"><i class="fas fa-plus mr-1"></i> New Task</button>
           </div>
         </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead><tr class="text-left border-b border-amber-300">
-              <th class="py-2">Date</th><th>Time</th><th>Title</th><th>Category</th>
-              <th>Priority</th><th>Pts</th><th>Status</th><th>By</th><th></th></tr></thead>
-            <tbody>
-              ${tasks.map(t=>{
-                const c = State.categories.find(c=>c.id===t.categoryId);
-                const a = ACTOR_INFO[t.createdBy] || {label:t.createdBy||"system", chip:"bg-slate-300"};
-                const done = t.status==="done";
-                return `<tr class="border-b border-amber-200/40 hover:bg-amber-50/40">
-                  <td class="py-2 whitespace-nowrap">${fmtDate(t.date)}</td>
-                  <td class="whitespace-nowrap">${t.startTime||"--"}${t.durationMin?` <span class="opacity-60">(${t.durationMin}m)</span>`:""}</td>
-                  <td class="font-semibold ${done?"line-through opacity-60":""}">${escapeHtml(t.title)}</td>
-                  <td>${c?`<span class="pill" style="background:${c.color};color:#fff"><i class="fas ${c.icon}"></i>${c.name}</span>`:"-"}</td>
-                  <td><span class="pill priority-${t.priority||"M"} text-white">${t.priority||"M"}</span></td>
-                  <td>${t.points||0}</td>
-                  <td>${done?'<span class="pill bg-green-600 text-white">done</span>':'<span class="pill bg-amber-200">pending</span>'}</td>
-                  <td><span class="pill ${a.chip}">${a.emoji||""} ${a.label}</span></td>
-                  <td class="text-right whitespace-nowrap">
-                    <button class="btn-ghost" onclick="App.cg.taskModal('${t.id}')"><i class="fas fa-pen"></i></button>
-                    <button class="btn-ghost" onclick="App.cg.deleteTask('${t.id}')"><i class="fas fa-trash text-rose-700"></i></button>
-                  </td>
-                </tr>`;
-              }).join("") || `<tr><td colspan="9" class="py-8 text-center opacity-60">No tasks yet — create one!</td></tr>`}
-            </tbody>
-          </table>
+        <div class="space-y-2">
+          ${dates.length===0
+            ? `<div class="opacity-60 italic text-center py-8">No tasks${filter!=="all"?` (filter: ${filter})`:""}</div>`
+            : dates.map(d=>{
+                const list = groups[d].sort((a,b)=>(a.startTime||"").localeCompare(b.startTime||""));
+                const done = list.filter(t=>t.status==="done").length;
+                const totalPts = list.reduce((s,t)=>s+(t.points||0),0);
+                const earned = list.filter(t=>t.status==="done").reduce((s,t)=>s+(t.points||0),0);
+                const isToday = d===today_;
+                return `<details class="bg-amber-50/50 border ${isToday?"border-amber-400 ring-1 ring-amber-300":"border-amber-200"} rounded-xl" ${isToday?"open":""}>
+                  <summary class="p-3 flex items-center gap-3 flex-wrap">
+                    <i class="fas fa-chevron-right opacity-50"></i>
+                    <div class="font-fantasy font-bold">${fmtDate(d)}${isToday?' <span class="text-xs font-normal text-amber-700">(today)</span>':''}</div>
+                    <span class="pill bg-amber-100">${list.length} tasks</span>
+                    <span class="pill bg-emerald-100 text-emerald-800">${done} done</span>
+                    <span class="pill bg-amber-100">${earned}/${totalPts} pts</span>
+                  </summary>
+                  <div class="px-3 pb-3 overflow-x-auto">
+                    <table class="w-full text-sm">
+                      <thead><tr class="text-left border-b border-amber-300/60">
+                        <th class="py-2">Time</th><th>Title</th><th>Category</th>
+                        <th>Priority</th><th>Pts</th><th>Status</th><th>By</th><th></th></tr></thead>
+                      <tbody>
+                        ${list.map(t=>{
+                          const c = State.categories.find(c=>c.id===t.categoryId);
+                          const a = ACTOR_INFO[t.createdBy] || {label:t.createdBy||"system", chip:"bg-slate-300", emoji:""};
+                          const isDone = t.status==="done";
+                          return `<tr class="border-b border-amber-200/40 hover:bg-amber-50/40">
+                            <td class="py-2 whitespace-nowrap">${t.startTime||"--"}${t.durationMin?` <span class="opacity-60">(${t.durationMin}m)</span>`:""}</td>
+                            <td class="font-semibold ${isDone?"line-through opacity-60":""}">${escapeHtml(t.title)}</td>
+                            <td>${c?`<span class="pill" style="background:${c.color};color:#fff"><i class="fas ${c.icon}"></i>${c.name}</span>`:"-"}</td>
+                            <td><span class="pill priority-${t.priority||"M"} text-white">${t.priority||"M"}</span></td>
+                            <td>${t.points||0}</td>
+                            <td>${isDone?'<span class="pill bg-green-600 text-white">done</span>':'<span class="pill bg-amber-200">pending</span>'}</td>
+                            <td><span class="pill ${a.chip}">${a.emoji||""} ${a.label}</span></td>
+                            <td class="text-right whitespace-nowrap">
+                              <button class="btn-ghost" onclick="App.cg.taskModal('${t.id}')"><i class="fas fa-pen"></i></button>
+                              <button class="btn-ghost" onclick="App.cg.deleteTask('${t.id}')"><i class="fas fa-trash text-rose-700"></i></button>
+                            </td>
+                          </tr>`;
+                        }).join("")}
+                      </tbody>
+                    </table>
+                  </div>
+                </details>`;
+              }).join("")}
         </div>
       </div>`;
   },
+  setStatusFilter(f){ this.statusFilter = f; this.renderView(); },
 
   // -- Categories
   viewCategories(){
@@ -1030,20 +1064,66 @@ const CaregiverUI = {
     const badges  = State.rewards.filter(r=>r.type==="badge");
     const thresh  = State.rewards.filter(r=>r.type==="threshold");
     const pending = State.redemptions.filter(r=>!r.fulfilledAt);
+    const allRedemptions = [...State.redemptions].sort((a,b)=>(b.atMs||0)-(a.atMs||0));
+    const earnedPts = State.tasks.filter(t=>t.status==="done").reduce((s,t)=>s+(t.points||0),0);
+    const spentPts  = State.redemptions.reduce((s,r)=>s+(r.pointsSpent||0),0);
+    const balance   = Math.max(0, earnedPts - spentPts);
+    const stored    = State.meher.totalPoints || 0;
+    const drift     = stored !== balance;
     return `
       <div class="space-y-6">
+        <div class="parchment-card p-5 ${drift?"border-l-4 border-rose-600":"border-l-4 border-amber-400"}">
+          <div class="flex items-start justify-between flex-wrap gap-3">
+            <div>
+              <h3 class="font-fantasy text-lg font-bold">✨ House Points status</h3>
+              <p class="text-sm opacity-70 mt-1">
+                Earned <b>${earnedPts}</b> across ${State.tasks.filter(t=>t.status==="done").length} completed tasks
+                · Spent <b>${spentPts}</b> across ${State.redemptions.length} redemptions
+                · Balance should be <b>${balance}</b>
+              </p>
+              <p class="text-sm mt-1">
+                Currently stored in app: <b class="${drift?"text-rose-700":"text-emerald-700"}">${stored}</b>
+                ${drift?` <span class="text-rose-700">(out of sync — click Recompute to fix)</span>`:` <span class="text-emerald-700">✓ in sync</span>`}
+              </p>
+            </div>
+            <button class="btn-primary" onclick="App.cg.recompute()"><i class="fas fa-rotate mr-1"></i> Recompute House Points</button>
+          </div>
+        </div>
+
         ${pending.length? `<div class="parchment-card p-5 border-l-4 border-emerald-600">
           <h3 class="font-fantasy text-lg font-bold mb-2">🎁 Pending redemptions (${pending.length})</h3>
           <div class="space-y-2">
             ${pending.map(r=>{
               const rw = State.rewards.find(x=>x.id===r.rewardId);
-              return `<div class="flex items-center justify-between bg-emerald-50 rounded-lg px-3 py-2">
+              return `<div class="flex items-center justify-between bg-emerald-50 rounded-lg px-3 py-2 flex-wrap gap-2">
                 <div><b>${rw?.icon||"🎁"} ${escapeHtml(rw?.name||"?")}</b> · ${r.pointsSpent} pts · ${new Date(r.atMs||Date.now()).toLocaleString("en-IN")}</div>
-                <button class="btn-primary" onclick="App.cg.fulfillRedemption('${r.id}')"><i class="fas fa-check mr-1"></i> Mark fulfilled</button>
+                <div class="flex gap-2">
+                  <button class="btn-primary" onclick="App.cg.fulfillRedemption('${r.id}')"><i class="fas fa-check mr-1"></i> Mark fulfilled</button>
+                  <button class="btn-ghost" onclick="App.cg.deleteRedemption('${r.id}')" title="Refund points back to Meher"><i class="fas fa-rotate-left text-rose-700"></i></button>
+                </div>
               </div>`;
             }).join("")}
           </div>
         </div>`:""}
+
+        ${allRedemptions.length? `<details class="parchment-card p-5">
+          <summary class="cursor-pointer flex items-center gap-2"><i class="fas fa-receipt"></i><h3 class="font-fantasy text-lg font-bold">All redemptions history (${allRedemptions.length})</h3><span class="text-xs opacity-60 ml-2">— delete any to refund the points</span></summary>
+          <div class="mt-3 space-y-1 text-sm">
+            ${allRedemptions.map(r=>{
+              const rw = State.rewards.find(x=>x.id===r.rewardId);
+              return `<div class="flex items-center justify-between bg-amber-50/60 rounded-lg px-3 py-2 flex-wrap gap-2">
+                <div>
+                  <span class="text-lg">${rw?.icon||"🎁"}</span>
+                  <b>${escapeHtml(rw?.name||"(deleted reward)")}</b>
+                  · ${r.pointsSpent} pts
+                  · ${r.atMs?new Date(r.atMs).toLocaleString("en-IN"):"?"}
+                  ${r.fulfilledAt?'<span class="pill bg-emerald-200 ml-2">fulfilled</span>':'<span class="pill bg-amber-200 ml-2">pending</span>'}
+                </div>
+                <button class="btn-ghost" onclick="App.cg.deleteRedemption('${r.id}')" title="Delete redemption and refund the ${r.pointsSpent} pts"><i class="fas fa-trash text-rose-700"></i></button>
+              </div>`;
+            }).join("")}
+          </div>
+        </details>`:""}
 
         <div class="parchment-card p-5">
           <div class="flex items-center justify-between mb-3">
@@ -1170,10 +1250,10 @@ const CaregiverUI = {
         <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
           <h2 class="font-fantasy text-xl font-bold">Activity Log</h2>
           <div class="flex gap-1 flex-wrap">
-            <button class="pill ${!filterByActor?'bg-ink text-white':'bg-amber-100'}" onclick="App.cg.setAuditFilter('')">All</button>
+            <button class="pill pill-btn ${!filterByActor?'is-active':'bg-amber-100'}" onclick="App.cg.setAuditFilter('')">All</button>
             ${["papa","mumma","dadi","baba","meher"].map(k=>{
               const a = ACTOR_INFO[k];
-              return `<button class="pill ${filterByActor===k?a.chip:'bg-amber-100'}" onclick="App.cg.setAuditFilter('${k}')">${a.emoji} ${a.label}</button>`;
+              return `<button class="pill pill-btn ${filterByActor===k?a.chip:'bg-amber-100'}" onclick="App.cg.setAuditFilter('${k}')">${a.emoji} ${a.label}</button>`;
             }).join("")}
           </div>
         </div>
@@ -1248,6 +1328,7 @@ const CaregiverUI = {
             <option value="daily" ${data.recurrence==="daily"?"selected":""}>Every day (this week)</option>
             <option value="weekdays" ${data.recurrence==="weekdays"?"selected":""}>Weekdays (Mon–Fri this week)</option>
             <option value="weekly" ${data.recurrence==="weekly"?"selected":""}>Same day each week (all 8 weeks)</option>
+            <option value="until-end" ${data.recurrence==="until-end"?"selected":""}>Every day from this date till end of vacation</option>
           </select>
         </div>
         <div class="md:col-span-2">
@@ -1329,7 +1410,12 @@ const CaregiverUI = {
     const before = State.tasks.find(t=>t.id===id);
     await deleteDoc(doc(db,"tasks",id));
     await writeAudit("delete","task",id, before, null);
-    toast("Task deleted");
+    if(before?.status === "done"){
+      const r = await recomputeMeherTotals({silent:true});
+      toast(`Task deleted · House Points now ${r.total}`);
+    } else {
+      toast("Task deleted");
+    }
   },
   async restoreAudit(auditId){
     const a = State.audit.find(x=>x.id===auditId);
@@ -1508,7 +1594,33 @@ const CaregiverUI = {
     await writeAudit("update","redemption",id,null,{fulfilled:true});
     toast("Marked as fulfilled");
   },
+  async deleteRedemption(id){
+    const r = State.redemptions.find(x=>x.id===id);
+    if(!r) return;
+    if(!confirm(`Delete this redemption and refund ${r.pointsSpent} pts to Meher?`)) return;
+    await deleteDoc(doc(db,"redemptions",id));
+    await writeAudit("delete","redemption",id, r, null);
+    const result = await recomputeMeherTotals({silent:true});
+    toast(`Redemption deleted · House Points now ${result.total}`);
+  },
+  async recompute(){
+    if(!confirm("Recompute Meher's House Points from her actual task and redemption history?")) return;
+    await recomputeMeherTotals();
+  },
 };
+
+// Shared by both Caregiver and Meher panels: a small 3-chip filter for
+// All / Pending / Done. `fn` is the global JS path used in onclick.
+function statusFilterChips(active, fn){
+  const opts = [
+    ["all",     "All",     "fa-circle-dot"],
+    ["pending", "Pending", "fa-hourglass-half"],
+    ["done",    "Done",    "fa-check"],
+  ];
+  return opts.map(([v,l,i])=>
+    `<button class="pill pill-btn ${active===v?'is-active':'bg-amber-100'}" onclick="${fn}('${v}')"><i class="fas ${i} mr-1"></i>${l}</button>`
+  ).join("");
+}
 
 // ---------------------------------------------------------------------------
 //  MEHER UI
@@ -1555,27 +1667,37 @@ const MeherUI = {
 
   viewToday(){
     const d = today();
-    const list = State.tasks.filter(t=>t.date===d).sort((a,b)=>(a.startTime||"").localeCompare(b.startTime||""));
-    const done = list.filter(t=>t.status==="done").length;
-    const totalPts = list.reduce((s,t)=>s+(t.points||0),0);
-    const earnedPts = list.filter(t=>t.status==="done").reduce((s,t)=>s+(t.points||0),0);
+    const all = State.tasks.filter(t=>t.date===d).sort((a,b)=>(a.startTime||"").localeCompare(b.startTime||""));
+    const done = all.filter(t=>t.status==="done").length;
+    const totalPts = all.reduce((s,t)=>s+(t.points||0),0);
+    const earnedPts = all.filter(t=>t.status==="done").reduce((s,t)=>s+(t.points||0),0);
+    const filter = this.statusFilter || "all";
+    const visible = all.filter(t => filter==="pending" ? t.status!=="done" : filter==="done" ? t.status==="done" : true);
     return `
       <div class="parchment-card p-5 mb-4">
         <div class="flex items-center justify-between flex-wrap gap-3">
           <div>
             <h2 class="font-fantasy text-2xl font-bold">📖 Today's Chapter</h2>
-            <p class="opacity-80 mt-1">${list.length} adventures await · ${done} completed · ${earnedPts}/${totalPts} points earned</p>
+            <p class="opacity-80 mt-1">${all.length} adventures await · ${done} completed · ${earnedPts}/${totalPts} points earned</p>
           </div>
           <div class="w-48 bg-amber-100 rounded-full h-3 overflow-hidden">
-            <div class="h-full house-gradient" style="width:${list.length? Math.round(100*done/list.length):0}%"></div>
+            <div class="h-full house-gradient" style="width:${all.length? Math.round(100*done/all.length):0}%"></div>
           </div>
+        </div>
+        <div class="mt-3 flex items-center gap-2 flex-wrap">
+          <span class="text-sm font-semibold opacity-70">Show:</span>
+          ${statusFilterChips(filter, "App.meher.setStatusFilter")}
         </div>
       </div>
       <div class="space-y-3">
-        ${list.length===0 ? `<div class="parchment-card p-8 text-center opacity-70 italic">No tasks today — enjoy your free time! ✨</div>` :
-          list.map(t=>this.taskCardHtml(t)).join("")}
+        ${visible.length===0
+          ? (all.length===0
+              ? `<div class="parchment-card p-8 text-center opacity-70 italic">No tasks today — enjoy your free time! ✨</div>`
+              : `<div class="parchment-card p-8 text-center opacity-70 italic">No ${filter} tasks right now ✨</div>`)
+          : visible.map(t=>this.taskCardHtml(t)).join("")}
       </div>`;
   },
+  setStatusFilter(f){ this.statusFilter = f; this.renderView(); },
   taskCardHtml(t){
     const c = State.categories.find(c=>c.id===t.categoryId);
     const done = t.status==="done";
@@ -1885,7 +2007,7 @@ const MeherUI = {
 // Recompute Meher's house points, streak, and earned badges from raw task
 // history. Used (a) as a one-time correction for any historical drift and
 // (b) as a self-heal button caregivers can re-run if numbers ever look off.
-async function recomputeMeherTotals(){
+async function recomputeMeherTotals(opts={}){
   const done = State.tasks.filter(t=>t.status==="done");
   const earnedPts = done.reduce((s,t)=>s+(t.points||0),0);
   const spentPts = State.redemptions.reduce((s,r)=>s+(r.pointsSpent||0),0);
@@ -1909,7 +2031,11 @@ async function recomputeMeherTotals(){
     lastCompletedAt: lastDone ? new Date(lastDone.completedAtMs).toISOString() : null
   });
   await writeAudit("recompute","meher_state","main", before, { totalPoints: total, streakDays: streak, earnedBadges });
-  toast(`✓ Recomputed: ${total} House Points · ${streak}-day streak`);
+  const summary = { earnedPts, spentPts, total, streak, earnedBadges, doneCount: done.length, redemptionCount: State.redemptions.length };
+  if(!opts.silent){
+    toast(`✓ Earned ${earnedPts} − Spent ${spentPts} = ${total} pts · ${streak}-day streak`);
+  }
+  return summary;
 }
 function ds_isToday(s){ return s===today(); }
 
@@ -1998,6 +2124,15 @@ function expandRecurrence(task){
         const d = addDays(ws, i);
         if(d.getDay()===dow){ out.push({ ...task, date: ymd(d), recurrence:"none" }); break; }
       }
+    }
+  } else if(recurrence==="until-end"){
+    // Fan task out across every day from its own start date through the
+    // last day of the 8-week vacation (inclusive).
+    const start = new Date(State.settings.startDate);
+    const end = addDays(start, (State.settings.weeks||8)*7 - 1);
+    const taskStart = new Date(task.date);
+    for(let d = new Date(taskStart); d.getTime() <= end.getTime(); d = addDays(d,1)){
+      out.push({ ...task, date: ymd(d), recurrence:"none" });
     }
   }
   return out.length? out : [task];
